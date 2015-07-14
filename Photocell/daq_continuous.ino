@@ -1,3 +1,7 @@
+// Arduino photocell sketch
+// In the setup method, the value in the Serial.begin() function call
+// represents the baud rate, this can be tweaked if higher transmission speeds
+// are desired
 short analogPin = 0;
 int analogValue = 0;
 int testValue = 1000;
