@@ -20,7 +20,7 @@ classdef MotionSensor < handle
         setParamByte = 4;
         startReadingByte = 5;
         stopReadingByte  = 6;
-        getDataByte = 6;
+        getDataByte = 7;
         initResponse = 1;
     end
     
