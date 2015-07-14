@@ -1,4 +1,4 @@
-Code for doing photocell measurements. We will do this in two parts:
+# Photoresistor
 
 1) The photocell measures continuously the luminance on the screen (current sensor polling is established at 6000 Hz). 
    In matlab we continously change the screen luminance, sending a synchronization signal to the sensor polling system.
