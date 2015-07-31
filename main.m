@@ -1,24 +1,15 @@
 % Main script for getting information on each screen
 clc;clear all;
 
-% Default parameters
-clearColor = [0.2 0.2 0.2];
-lMonitorIndex = 2;
-rMonitorIndex = 3;
-[lMonitorWindow, lMonitorRect] = Screen('OpenWindow',lMonitorIndex, clearColor);
-[rMonitorWindow, rMonitorRect] = Screen('OpenWindow',rMonitorIndex, clearColor);
-
 % Initialize objects
-motionReader = MotionReader('COM8');
-rewardDelivery = RewardDelivery(0,1);
-stimulusManager = StimulusManager(lMonitorWindow, rMonitorWindow);
+experimentManager = ExperimentManager();
+experimentManager.Init();
+stimulusManager = StimulusManager(experimentManager.lMonitorWindow, experimentManager.rMonitorWindow);
 
 % First upload stimuli to stimulus manager, which takes care of loading
 stimulusPath = 'C:\VR_SYSTEM\Stimuli\';
-sIndex1 = stimulusManager.AddStimulus('background',[stimulusPath 'background.png']);
-sIndex2 = stimulusManager.AddStimulus('grating1',[stimulusPath 'stimulus_1.png']);
-sIndex3 = stimulusManager.AddStimulus('grating2',[stimulusPath 'stimulus_2.png']);
-sIndex4 = stimulusManager.AddStimulus('testdrift',[stimulusPath 'stimulus_0.png']);
+sIndex1 = stimulusManager.AddStimulus('background',[stimulusPath 'black.png']);
+sIndex2 = stimulusManager.AddStimulus('grating1',[stimulusPath 'white.png']);
 
 % Create presentation data for testing
 % Col 1: monitor
@@ -26,42 +17,68 @@ sIndex4 = stimulusManager.AddStimulus('testdrift',[stimulusPath 'stimulus_0.png'
 % Col 3: stimulus id
 % Col 4: requested presentation time in frames
 % Col 5: remaining columns can be used to provide texture offset data
-stimulusData = [1 1 sIndex1 80;
-                1 2 sIndex2 90;
-                1 3 sIndex1 70;
-                2 1 sIndex2 50;
-                2 2 sIndex3 90;
-                2 3 sIndex2 70];           
-[frameParameters nFrames] = stimulusManager.GenerateFramesFromCounts(stimulusData);
+stimulusData = [1 1 sIndex1 30;
+                1 2 sIndex2 5;
+                1 3 sIndex1 5;
+                1 4 sIndex2 5;
+                1 5 sIndex1 5;
+                1 6 sIndex2 5;
+                
+                1 7 sIndex1 30;
+                1 8 sIndex2 1;
+                1 9 sIndex1 1;
+                1 10 sIndex2 1;
+                1 11 sIndex1 1;
+                1 12 sIndex2 1;
+                
+                1 13 sIndex1 30;
+                1 14 sIndex2 1;
+                1 15 sIndex1 5;
+                1 16 sIndex2 1;
+                1 17 sIndex1 5;
+                1 18 sIndex2 1;
+                
+                1 19 sIndex1 30;
+                1 20 sIndex2 1;
+                1 21 sIndex1 20;
+                1 22 sIndex2 1;
+                1 23 sIndex1 20;
+                1 24 sIndex2 1;
+                1 25 sIndex1 30;
+                
+                2 1 sIndex1 30;
+                2 2 sIndex2 5;
+                2 3 sIndex1 5;
+                2 4 sIndex2 5;
+                2 5 sIndex1 5;
+                2 6 sIndex2 5;
+                
+                2 7 sIndex1 30;
+                2 8 sIndex2 1;
+                2 9 sIndex1 1;
+                2 10 sIndex2 1;
+                2 11 sIndex1 1;
+                2 12 sIndex2 1;
+                
+                2 13 sIndex1 30;
+                2 14 sIndex2 1;
+                2 15 sIndex1 5;
+                2 16 sIndex2 1;
+                2 17 sIndex1 5;
+                2 18 sIndex2 1;
+                
+                2 19 sIndex1 30;
+                2 20 sIndex2 1;
+                2 21 sIndex1 20;
+                2 22 sIndex2 1;
+                2 23 sIndex1 20;
+                2 24 sIndex2 1;
+                2 25 sIndex1 30];           
+frameParameters = stimulusManager.GenerateFramesFromCounts(stimulusData);
 
-% Run the experiment
-frameData = zeros(size(frameParameters,1),15);
-for frameIndex = 1:nFrames
-    % Readvelocity
-    
-    % Update framebuffer
-    if ( frameParameters(frameIndex,1) == 0)
-        Screen('FillRect',lMonitorWindow,clearColor);
-    else
-        Screen('DrawTexture', lMonitorWindow, frameParameters(frameIndex,1),[],[],0);
-    end
-    
-    if ( frameParameters(frameIndex,2) == 0)
-        Screen('FillRect',rMonitorWindow,clearColor);
-    else
-        Screen('DrawTexture', rMonitorWindow, frameParameters(frameIndex,2),[],[],0);
-    end
-    
-    % Swap buffer and collect data
-    [VLB1 SO1 FT1 M1 B1]  = Screen('Flip',lMonitorWindow);
-    [VLB2 SO2 FT2 M2 B2] = Screen('Flip',rMonitorWindow);
-    frameData(frameIndex,1:10) = [VLB1 SO1 FT1 M1 B1 VLB2 SO2 FT2 M2 B2];
-end
+experimentManager.AttachFrames(frameParameters);
 
-Screen('FillRect',lMonitorWindow, clearColor);
-Screen('FillRect',rMonitorWindow, clearColor);
-Screen('Flip',lMonitorWindow);
-Screen('Flip',rMonitorWindow);
+experimentManager.RunFrames();
 
 % Finish and clean up after the experiment
 Screen('CloseAll');

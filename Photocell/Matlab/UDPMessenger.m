@@ -1,7 +1,7 @@
 % UDP messenger
 % Sends UDP message to Winform UDP server
 
-destPort = 6789;
+destPort = 6767;
 localPort = 6788;
 client = udp('127.0.0.1',destPort);
 
