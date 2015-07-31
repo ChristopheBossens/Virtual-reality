@@ -26,7 +26,7 @@ fclose(fid);
 
 %% Plot results
 timeVector = [0 diff(data(2,:))];
-timeVector(timeVector < 0) = timeVector(timeVector<0) + 256;
+timeVector(timeVector < -60000) = timeVector(timeVector<-60000) + 65536;
 timeVector = cumsum(timeVector);
 plot(1:dataPackets,data(3,:))
 set(gca,'YLim',[0 1024])
