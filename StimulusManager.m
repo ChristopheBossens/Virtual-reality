@@ -141,7 +141,7 @@ classdef StimulusManager < handle
         end       
 
         % Reports which stimulus indices are not in the list
-        function [frameParameters] = GenerateFramesFromCounts(obj, stimulusData)
+        function [frameParameters nFrames] = GenerateFramesFromCounts(obj, stimulusData)
             % StimulusManager GenerateFramesFromCounts
             %  Generates a frames parameters matrix from stimulus data
             %  stimulus data is expected to have the following format
@@ -175,7 +175,7 @@ classdef StimulusManager < handle
                 frameParameters(previousIndex:previousIndex+rScreenData(orderIndex,4)-1,2) = obj.GetRightMonitorIndex(rScreenData(orderIndex,3));
                 previousIndex = previousIndex + rScreenData(orderIndex,4);
             end
-
+            nFrames = size(frameParameters,1);
         end
         function naList = ConsistencyCheck(obj, list)
             % StimulusManager ConsistencyCheck

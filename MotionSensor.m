@@ -39,13 +39,14 @@ classdef MotionSensor < handle
                 % Try to send initialization byte
                 fwrite(obj.serialPort,obj.initByte,'int8');
                 response = fread(obj.serialPort,1,'int8');
-                SetParams([40 40 31 31]);
+                obj.SetParams([40 40 31 31]);
                 if ( response == obj.initResponse)
                     obj.sensorInit = 1;
                 end
                 display('Connected to sensor.');
             catch exc
                 display('Warning, could not connect to sensor');
+                display('Subsequent calls to readsensor will return zero values');
                 display(exc.message);
             end
         end 
@@ -54,7 +55,7 @@ classdef MotionSensor < handle
             % Make sure we terminate connection with the sensor in a
             % correct way
             if (obj.sensorReading == 1)
-                StopReading();
+                obj.StopReading();
             end
             fclose(obj.serialPort);
         end

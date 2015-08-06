@@ -81,3 +81,6 @@ subplot(2,1,2)
 plot(linspace(0,1,length(onsetDelta)),onsetDelta,'.')
 set(gca,'XTick',[])
 title('Time between onset threshold triggers')
+timeVector = cumsum(timeVector);
+plot(1:dataPackets,data(3,:))
+set(gca,'YLim',[0 1024])
