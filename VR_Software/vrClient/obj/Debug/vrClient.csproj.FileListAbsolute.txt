@@ -1,0 +1,9 @@
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\bin\Debug\vrClient.exe.config
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\bin\Debug\vrClient.exe
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\bin\Debug\vrClient.pdb
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.csprojResolveAssemblyReference.cache
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.main_form.resources
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.Properties.Resources.resources
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.csproj.GenerateResource.Cache
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.exe
+C:\VR_SYSTEM\System\Software\VR_Software\vrClient\obj\Debug\vrClient.pdb

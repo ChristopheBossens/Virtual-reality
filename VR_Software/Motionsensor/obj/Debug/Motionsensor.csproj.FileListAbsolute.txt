@@ -1,0 +1,9 @@
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\bin\Debug\Motionsensor.exe.config
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\bin\Debug\Motionsensor.exe
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\bin\Debug\Motionsensor.pdb
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.Form1.resources
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.Properties.Resources.resources
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.csproj.GenerateResource.Cache
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.exe
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.pdb
+C:\VR_SYSTEM\System\Software\VR_Software\Motionsensor\obj\Debug\Motionsensor.csprojResolveAssemblyReference.cache
