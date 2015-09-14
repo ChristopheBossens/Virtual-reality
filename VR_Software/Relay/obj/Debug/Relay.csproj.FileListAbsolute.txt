@@ -1,0 +1,9 @@
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\bin\Debug\Relay.exe.config
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\bin\Debug\Relay.exe
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\bin\Debug\Relay.pdb
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.csprojResolveAssemblyReference.cache
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.Form1.resources
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.Properties.Resources.resources
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.csproj.GenerateResource.Cache
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.exe
+C:\VR_SYSTEM\System\Software\VR_Software\Relay\obj\Debug\Relay.pdb
