@@ -18,6 +18,8 @@ namespace vrClient
     {
         ClientConnection clientConnection;
         ExperimentDesigner experimentDesigner;
+        ListboxMessenger matlabServerMessenger, cheetahServerMessages;
+
 
         public main_form()
         {
@@ -30,28 +32,12 @@ namespace vrClient
             transition_velocity_comparison.SelectedIndex = 0;
 
             experimentDesigner = new ExperimentDesigner();
+
+            matlabServerMessenger = new ListboxMessenger(matlab_server_messages, 20);
+            cheetahServerMessages = new ListboxMessenger(cheetah_server_messages, 20);
         }
 
         // Callback functions for designing experiments
-        private void connect_button_Click(object sender, EventArgs e)
-        {
-            clientConnection = new ClientConnection(ip_text.Text, Convert.ToInt32(port_text.Text));
-        }
-        private void send_command_Click(object sender, EventArgs e)
-        {
-            string[] configFiles;
-            int count;
-            if (clientConnection != null)
-            {
-                clientConnection.RequestConfigFiles(out count, out configFiles);
-                if (count > 0)
-                {
-                    for (int i = 0; i < count; ++i)
-                        config_files.Items.Add(configFiles[i]);
-                    config_files.Update();
-                }
-            }
-        }
         private void load_left_stimulus_Click(object sender, EventArgs e)
         {
             ofDialog.Filter = "PNG Files (*.png)|*.png";
@@ -61,15 +47,12 @@ namespace vrClient
             {
                 left_stimulus.ImageLocation=ofDialog.FileName;
                 Bitmap bmp = new Bitmap(ofDialog.FileName);
+                left_stimulus_name.Text = Path.GetFileNameWithoutExtension(ofDialog.FileName);
                 left_stimulus_width.Text = bmp.Width.ToString();
                 left_stimulus_height.Text = bmp.Height.ToString();
                 left_stimulus_top.Text = "0";
                 left_stimulus_left.Text = "0";
             }
-        }
-        private void test_sendstimulus_Click(object sender, EventArgs e)
-        {
-            clientConnection.SendImage(left_stimulus.Image, 0);
         }
         private void load_right_stimulus_Click(object sender, EventArgs e)
         {
@@ -79,6 +62,7 @@ namespace vrClient
             if (dr == DialogResult.OK)
             {
                 right_stimulus.ImageLocation = ofDialog.FileName;
+                right_stimulus_name.Text = Path.GetFileNameWithoutExtension(ofDialog.FileName);
                 Bitmap bmp = new Bitmap(ofDialog.FileName);
                 right_stimulus_width.Text = bmp.Width.ToString();
                 right_stimulus_height.Text = bmp.Height.ToString();
@@ -103,32 +87,32 @@ namespace vrClient
                     MessageBox.Show(exception.Message);
                 }
             }
+            else
+                MessageBox.Show("A trial called " + trial_name.Text + " already exists!");
         }
         private void update_trial_Click(object sender, EventArgs e)
         {
-            if (experimentDesigner.NameAvailable(trial_name.Text))
+            try
             {
-                try
+                int selectedTrial = trial_list.SelectedIndex;
+                string originalName = trial_list.SelectedItem.ToString();
+                string newName = trial_name.Text;
+                if (originalName != newName)
                 {
-                    int selectedTrial = trial_list.SelectedIndex;
-                    string selectedName = trial_list.SelectedItem.ToString();
-
-                    if (selectedName != trial_name.Text)
-                    { 
-                        if (!(experimentDesigner.NameAvailable(trial_name.Text)))
-                            return;
+                    if (!(experimentDesigner.NameAvailable(newName)))
+                    {
+                        MessageBox.Show("A trial with name " + trial_name.Text + " is already available.");
+                        return;
                     }
-
-                    experimentDesigner.UpdateTrial(selectedName, GetGUITrial());
-
-                    trial_list.Items[selectedTrial] = trial_name.Text;
                 }
-                catch (Exception exception)
-                {
-                    MessageBox.Show(exception.Message);
-                }
+                experimentDesigner.UpdateTrial(originalName, GetGUITrial());
+                trial_list.Items[selectedTrial] = newName;
             }
-        }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+        } 
         private void trial_list_MouseDoubleClick(object sender, MouseEventArgs e)
                 {
                     ListBox lb = (ListBox)sender;
@@ -166,15 +150,15 @@ namespace vrClient
             }
             isi_trial.Text = experimentDesigner.GetISITrial();
         }
-        private void generate_xml_Click(object sender, EventArgs e)
+        private void copy_left_stimulus_Click(object sender, EventArgs e)
         {
-
+            Stimulus stim = GetLeftStimulus();
+            SetRightStimulus(stim);
         }
 
-        // Callback functions for saving, loading and uploading experiments
+        // Callback functions for saving and loading experimental files
         private void save_configuration_Click(object sender, EventArgs e)
         {
-            
             SaveFileDialog sf = new SaveFileDialog();
             sf.Filter = "Experiment configuration files (*.econ)|*.econ";
 
@@ -191,36 +175,6 @@ namespace vrClient
                     MessageBox.Show(E.Message);
                 }
             }
-            
-        }
-        private void upload_configuration_Click(object sender, EventArgs e)
-        {
-            string currentFilename = experimentDesigner.GetCurrentFilename();
-            string configName = Path.GetFileNameWithoutExtension(currentFilename);
-
-            if (currentFilename != "")
-            {
-                // Check if a configuration file with the same name is already available
-                int count;
-                string[] configFiles;
-                clientConnection.RequestConfigFiles(out count, out configFiles);
-
-                if (count > 0)
-                {
-                    for (int i = 0; i < count;++i)
-                    {
-                        if (configName == configFiles[i])
-                        {
-                            MessageBox.Show("A configuration file with name " + configName + " already exists!");
-                            return;
-                        }
-                    }
-                }
-
-                // Start config creation by 
-                clientConnection.UploadConfigFile(currentFilename);  
-                clientConnection.SendConfigImage(configName,experimentDesigner.GetImageLocations());
-            }
         }
         private void load_configuration_Click(object sender, EventArgs e)
         {
@@ -235,7 +189,7 @@ namespace vrClient
                     experimentDesigner.LoadConfiguration(of.FileName);
 
                     trial_list.Items.Clear();
-
+                    set_isi_trial.Text = ">>";
                     string[] trialNames = experimentDesigner.GetTrialNames();
                     string isiTrialName = experimentDesigner.GetISITrial();
 
@@ -244,7 +198,10 @@ namespace vrClient
                         if (trialNames[trialIndex] != isiTrialName)
                             trial_list.Items.Add(trialNames[trialIndex]);
                         else
+                        {
                             isi_trial.Text = isiTrialName;
+                            set_isi_trial.Text = "<<";
+                        }
                     }
 
                     block_count.Value = experimentDesigner.GetBlockCount();
@@ -253,6 +210,7 @@ namespace vrClient
                         if (trialNames[trialIndex] != isiTrialName)
                         {
                             SetGUITrial(experimentDesigner.GetTrial(trialNames[trialIndex]));
+                            trial_list.SelectedItem = trialNames[trialIndex];
                             break;
                         }
                     }
@@ -263,8 +221,100 @@ namespace vrClient
                 }
             }
         }
+        private void xml_from_config_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sf = new SaveFileDialog();
+            sf.Filter = "Experiment XML files (*.exml)|*.exml";
 
-        // Helper functions for getting information from and into GUI elements
+            DialogResult dr = sf.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                try
+                {
+                    experimentDesigner.GenerateExperiment(sf.FileName);
+                }
+                catch (Exception E)
+                {
+                    MessageBox.Show(E.Message);
+                }
+            }
+        }
+
+        // Callback functions interacting with matlab server
+        private void connect_button_Click(object sender, EventArgs e)
+        {
+            if (clientConnection == null)
+            {
+                matlabServerMessenger.AddMessage("Trying to connect to Matlab server...");
+                clientConnection = new ClientConnection(ip_text.Text, Convert.ToInt32(port_text.Text));
+                clientConnection.SetMessenger(matlabServerMessenger);
+                if (clientConnection.IsConnected())
+                {
+                    matlabServerMessenger.AddMessage("Connected to Matlab server");
+                    disconnect_button.Enabled = true;
+                    connect_button.Enabled = false;
+                    load_config_xml.Enabled = true;
+                    load_custom_xml.Enabled = true;
+                }
+            }
+        }
+        private void disconnect_button_Click(object sender, EventArgs e)
+        {
+            clientConnection.Disconnect();
+            disconnect_button.Enabled = false;
+            connect_button.Enabled = true;
+            load_config_xml.Enabled = false;
+            load_custom_xml.Enabled = false;
+            run_experiment.Enabled = false;
+        }
+        private void load_config_xml_Click(object sender, EventArgs e)
+        { }
+        private void load_custom_xml_Click(object sender, EventArgs e)
+        {
+            ofDialog.Filter = "Experiment xml (*.exml)|*.exml";
+            DialogResult dr = ofDialog.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                if (clientConnection == null)
+                {
+                    matlabServerMessenger.AddMessage("Error: No connection with Matlab server!");
+                    return;
+                }
+                bool loadSuccesful = clientConnection.LoadExperimentConfig(ofDialog.FileName);
+
+                if (loadSuccesful)
+                {
+                    run_experiment.Enabled = true;
+                    matlabServerMessenger.AddMessage("Configuration file " + Path.GetFileName(ofDialog.FileName) + " succesfully loaded, ready to run experiment");
+                }
+                else
+                {
+                    run_experiment.Enabled = false;
+                    matlabServerMessenger.AddMessage("Unable to load " + Path.GetFileName(ofDialog.FileName));
+                }
+            }
+        }
+        private void run_experiment_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sf = new SaveFileDialog();
+            sf.Filter = "Exeriment log files (*.elog)|*.elog";
+            DialogResult dr = sf.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                clientConnection.RunExperiment(sf.FileName);
+            }
+        }
+
+        // Helper functions for setting information in GUI elements
+        private void SetGUITrial(Trial trial)
+        {
+            SetTransitionParameters(trial.GetTransitionParameters());
+            SetRewardParameters(trial.GetRewardParameters());
+            SetLeftStimulus(trial.GetLeftStimulus());
+            SetRightStimulus(trial.GetRightStimulus());
+            trial_name.Text = trial.GetName();
+            block_presentations.Value = trial.GetBlockPresentations();
+        }
         private void SetTransitionParameters(TransitionParameters tp)
         {
             if (tp.transitionType == TransitionType.Frame)
@@ -308,6 +358,7 @@ namespace vrClient
             left_stimulus_left.Text = stim.GetLeft().ToString();
             left_stimulus_width.Text = stim.GetWidth().ToString();
             left_stimulus_height.Text = stim.GetHeight().ToString();
+            left_stimulus_name.Text = stim.GetName();
         }
         private void SetRightStimulus(Stimulus stim)
         {
@@ -316,6 +367,25 @@ namespace vrClient
             right_stimulus_left.Text = stim.GetLeft().ToString();
             right_stimulus_width.Text = stim.GetWidth().ToString();
             right_stimulus_height.Text = stim.GetHeight().ToString();
+            right_stimulus_name.Text = stim.GetName();
+        }
+
+
+        // Helper functions for getting information from GUI elements
+        private Trial GetGUITrial()
+        {
+            Trial trial = new Trial(trial_name.Text);
+            TransitionParameters tp = GetTransitionParameters();
+            RewardParameters rp = GetRewardParameters();
+
+            Stimulus leftStimulus = GetLeftStimulus();
+            Stimulus rightStimulus = GetRightStimulus();
+
+            trial.SetBlockPresentations(Convert.ToInt32(block_presentations.Value));
+            trial.SetRewardParameters(rp);
+            trial.SetTransitionParameters(tp);
+            trial.SetStimulus(leftStimulus, rightStimulus);
+            return trial;
         }
         private TransitionParameters GetTransitionParameters()
         {
@@ -328,7 +398,7 @@ namespace vrClient
             else
             {
                 tp.transitionType = TransitionType.Velocity;
-                tp.lowerThan = (transition_velocity_comparison.SelectedIndex == 0);
+                tp.lowerThan = (transition_velocity_comparison.SelectedIndex == 1);
                 tp.velocityThreshold = Convert.ToDouble(transition_velocity_threshold.Value);
                 tp.velocityDuration = Convert.ToInt32(transition_velocity_duration.Value);
             }
@@ -350,7 +420,7 @@ namespace vrClient
             else
             {
                 rp.rewardType = RewardType.Velocity;
-                rp.lowerThan = (reward_velocity_comparison.SelectedIndex == 0);
+                rp.lowerThan = (reward_velocity_comparison.SelectedIndex == 1);
                 rp.velocityThreshold = Convert.ToDouble(reward_velocity_threshold.Value);
                 rp.velocityDuration = Convert.ToInt32(reward_velocity_duration.Value);
             }
@@ -364,6 +434,7 @@ namespace vrClient
             stim.SetHeight(Convert.ToInt32(left_stimulus_height.Text));
             stim.SetTop(Convert.ToInt32(left_stimulus_top.Text));
             stim.SetLeft(Convert.ToInt32(left_stimulus_left.Text));
+            stim.SetStimulusName(left_stimulus_name.Text);
             return stim;
         }
         private Stimulus GetRightStimulus()
@@ -374,34 +445,76 @@ namespace vrClient
             stim.SetHeight(Convert.ToInt32(right_stimulus_height.Text));
             stim.SetTop(Convert.ToInt32(right_stimulus_top.Text));
             stim.SetLeft(Convert.ToInt32(right_stimulus_left.Text));
+            stim.SetStimulusName(right_stimulus_name.Text);
             return stim;
         }
-        private Trial GetGUITrial()
+
+        // Drawing functions for receptive field mapper
+        int rfX = 0;
+        int rfY = 0;
+        private void rf_grating_position_Paint(object sender, PaintEventArgs e)
         {
-            Trial trial = new Trial(trial_name.Text);
-            TransitionParameters tp = GetTransitionParameters();
-            RewardParameters rp = GetRewardParameters();
-
-            Stimulus leftStimulus = GetLeftStimulus();
-            Stimulus rightStimulus = GetRightStimulus();
-
-            trial.SetBlockPresentations(Convert.ToInt32(block_presentations.Value));
-            trial.SetRewardParameters(rp);
-            trial.SetTransitionParameters(tp);
-            trial.SetStimulus(leftStimulus, rightStimulus);
-            return trial;
+            Graphics g = e.Graphics;
+            Brush b = new SolidBrush(Color.Red);
+            Pen p = new Pen(b);
+            g.DrawEllipse(p, rfX, rfY, 2, 2);
         }
-        private void SetGUITrial(Trial trial)
+        private void rf_grating_position_MouseMove(object sender, MouseEventArgs e)
         {
-            SetTransitionParameters(trial.GetTransitionParameters());
-            SetRewardParameters(trial.GetRewardParameters());
-            SetLeftStimulus(trial.GetLeftStimulus());
-            SetRightStimulus(trial.GetRightStimulus());
-            trial_name.Text = trial.GetName();
-            block_presentations.Value = trial.GetBlockPresentations();
+            Label rfLabel = (Label)sender;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                rfX = e.X;
+                rfY = e.Y;
+
+                if ((rfX > 0) && (rfX < rfLabel.Width) && (rfY > 0) && (rfY < rfLabel.Height))
+                {
+                    grating_center_x.Text = rfX.ToString();
+                    grating_center_y.Text = rfY.ToString();
+                    rf_grating_position.Invalidate();
+
+                    clientConnection.UpdateRFData(rfX*  10/2, rfY*  10, 0, 0);
+                }
+            }
+        }
+        private void start_manual_mapping_Click(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+            if (Convert.ToInt16(b.Tag) == 0)
+            {
+                rfX = rf_grating_position.Width / 2;
+                rfY = rf_grating_position.Height / 2;
+                clientConnection.UpdateRFData(rfX * 10, rfY * 10 / 2, 0, 0);
+
+                clientConnection.StartMapping();
+                b.Text = "Stop manual mapping";
+                b.Tag = 1;
+            }
+            else
+            {
+                clientConnection.StopMapping();
+                b.Text = "Start manual mapping";
+                b.Tag = 0;
+            }
+
         }
 
-        
-        
+        private void test_psth_Click(object sender, EventArgs e)
+        {
+            PSTHManager psthManager = new PSTHManager();
+            psthManager.Initialize(32, 1000, new string[]{"isi","go","nogo","abb","bab"});
+            psthManager.Show();
+        }
+
+        // Callbac functions for menu items
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PSTHManager psthManager = new PSTHManager();
+            psthManager.Initialize(32, 1000, new string[] { "isi", "go", "nogo", "abb", "bab" });
+            psthManager.Show();
+        }
+
+
     }
 }

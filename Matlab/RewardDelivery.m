@@ -26,6 +26,8 @@ classdef RewardDelivery < handle
         end
         function delete(obj)
             obj.StopReward();
+            delete(obj.boardHandle);
+            display('USB-ERB08 removed from data acquisition engine');
         end
 
         % Handles reward delivery

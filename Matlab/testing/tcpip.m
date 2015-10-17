@@ -31,3 +31,10 @@ end
 [savepng, mes] = fopen('C:\VR_SYSTEM\Stimuli\test.png','w+')
 fwrite(savepng,data)
 fclose(savepng)
+%% Test connection comming from remote desktop
+delete(localServer)
+localServer = tcpip('169.254.152.203', 6789, 'NetworkRole','Server')
+
+display('Waiting for connection');
+fopen(localServer);
+display('Connected!');

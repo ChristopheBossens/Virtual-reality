@@ -7,117 +7,6 @@ using System.Xml;
 
 namespace vrClient
 {
-    public struct TransitionParameters
-    {
-        public TransitionType transitionType;
-        public int frameDuration;
-        public bool lowerThan;
-        public double velocityThreshold;
-        public int velocityDuration;
-    };
-
-    public struct RewardParameters
-    {
-        public RewardType rewardType;
-        public int rewardCount, rewardTotal;
-        public bool lowerThan;
-        public double velocityThreshold;
-        public int velocityDuration;
-    };
-
-    public enum TransitionType
-    {
-        Frame,
-        Velocity
-    };
-
-    public enum RewardType
-    {
-        None,
-        Random,
-        Velocity
-    };
-
-    class Stimulus
-    {
-        string filename;
-
-        int width;
-        int height;
-        int top;
-        int left;
-
-        public void SetImage(string filename)
-        {
-            this.filename = filename;
-        }
-
-        public void SetPosition(int top, int left)
-        {
-            this.top = top;
-            this.left = left;
-        }
-
-        public int GetWidth() { return this.width; }
-        public int GetHeight(){ return this.height;}
-        public int GetTop() { return top; }
-        public int GetLeft(){ return left; }
-        public string GetFilename(){ return filename; }
-
-        public void SetWidth(int w) { this.width = w; }
-        public void SetHeight(int h) { this.height = h; }
-        public void SetTop(int t) { this.top = t; }
-        public void SetLeft(int l) { this.left = l; }
-        public void SetFilename(string s) { this.filename = s; }
-    }
-
-    class Trial
-    {
-        string name;
-
-        TransitionParameters tp;
-        RewardParameters rp;
-
-        Stimulus leftStimulus;
-        Stimulus rightStimulus;
-
-        int blockPresentations;
-        bool isiTrial;
-
-        public Trial(string name)
-        {   this.name = name; }
-        public void SetTransitionParameters(TransitionParameters t)
-        {   this.tp = t; }
-        public TransitionParameters GetTransitionParameters()
-        { return this.tp; }
-        public void SetRewardParameters(RewardParameters r)
-        {   this.rp = r;}
-        public RewardParameters GetRewardParameters()
-        { return this.rp; }
-        public Stimulus GetLeftStimulus()
-        { return this.leftStimulus; }
-        public Stimulus GetRightStimulus()
-        { return this.rightStimulus; }
-        public void SetStimulus(Stimulus left, Stimulus right)
-        {
-            this.leftStimulus = left;
-            this.rightStimulus = right;
-        }
-
-        public void SetBlockPresentations(int n)
-        { this.blockPresentations = n; }
-        public int GetBlockPresentations()
-        { return this.blockPresentations; }
-        public void SetName(string s)
-        { this.name = s;}
-        public string GetName()
-        { return name; }
-        public void SetISI(bool b)
-        { this.isiTrial = b; }
-        public bool GetISI()
-        { return this.isiTrial; }
-    }
-
     class ExperimentDesigner
     {
         int blockCount;
@@ -130,23 +19,25 @@ namespace vrClient
             trialDictionary = new Dictionary<string, Trial>();
         }
 
-        // Functions for managing the trial dictionary
-        public bool NameAvailable(string name)
-        {
-            if (trialDictionary.ContainsKey(name))
-                return false;
-            else 
-                return true;
-        }
+        // Interface with the trial dictionary
+        public bool NameAvailable(string name) { return (!trialDictionary.ContainsKey(name));}
         public void AddTrial(Trial trial)
         {
             if (!trialDictionary.ContainsKey(trial.GetName()))
                 trialDictionary.Add(trial.GetName(), trial);
         }
-        public void UpdateTrial(string name, Trial trial)
+        public Trial GetTrial(string name)
         {
             if (trialDictionary.ContainsKey(name))
-                trialDictionary[name] = trial;
+                return trialDictionary[name];
+            else
+                return null;
+        }
+        public void UpdateTrial(string originalName, Trial trial)
+        {           
+            Trial originalTrial = GetTrial(originalName);
+            trialDictionary.Remove(originalName);
+            AddTrial(trial);
         }
         public void RemoveTrial(string name)
         {
@@ -195,25 +86,10 @@ namespace vrClient
             return nameList;
         }
         public string GetCurrentFilename() { return currentFileName; }
-        public string GetISITrial()
-        {
-            return this.isiTrialName;
-        }
-        public void SetISITrial(string s)
-        {
-            this.isiTrialName = s;
-        }
-        public Trial GetTrial(string name)
-        {
-            if (trialDictionary.ContainsKey(name))
-                return trialDictionary[name];
-            else
-                return null;
-        }
-        public void SetBlockCount(int n)
-        { this.blockCount = n; }
-        public int GetBlockCount()
-        { return this.blockCount; }
+        public string GetISITrial() { return this.isiTrialName;}
+        public void SetISITrial(string s) {this.isiTrialName = s;}
+        public void SetBlockCount(int n) { this.blockCount = n; }
+        public int GetBlockCount() { return this.blockCount; }
         
         // Functions for exporting and importing xml files
         public void SaveConfiguration(string filename)
@@ -247,116 +123,10 @@ namespace vrClient
                     xmlWriter.WriteString("false");
                 xmlWriter.WriteEndElement();
 
-                RewardParameters rp = pair.Value.GetRewardParameters();
-                xmlWriter.WriteStartElement("reward");
-                switch (rp.rewardType)
-                {
-                    case RewardType.None:
-                        xmlWriter.WriteAttributeString("type", "none");
-                        break;
-                    case RewardType.Random:
-                        xmlWriter.WriteAttributeString("type", "random");
-                        xmlWriter.WriteStartElement("count");
-                        xmlWriter.WriteString(rp.rewardCount.ToString());
-                        xmlWriter.WriteEndElement();
-                        xmlWriter.WriteStartElement("total");
-                        xmlWriter.WriteString(rp.rewardTotal.ToString());
-                        xmlWriter.WriteEndElement();
-                        break;
-                    case RewardType.Velocity:
-                        xmlWriter.WriteAttributeString("type", "velocity");
-                        xmlWriter.WriteStartElement("threshold");
-                        xmlWriter.WriteString(rp.velocityThreshold.ToString());
-                        xmlWriter.WriteEndElement();
-                        xmlWriter.WriteStartElement("duration");
-                        xmlWriter.WriteString(rp.velocityDuration.ToString());
-                        xmlWriter.WriteEndElement();
-                        xmlWriter.WriteStartElement("thresholdComparison");
-                        if (rp.lowerThan)
-                            xmlWriter.WriteString("lower");
-                        else
-                            xmlWriter.WriteString("higher");
-                        xmlWriter.WriteEndElement();
-                        break;
-                }
-                xmlWriter.WriteEndElement();
-
-
-                TransitionParameters tp = pair.Value.GetTransitionParameters();
-                xmlWriter.WriteStartElement("transition");
-                switch (tp.transitionType)
-                {
-                    case TransitionType.Frame:
-                        xmlWriter.WriteAttributeString("type", "duration");
-                        xmlWriter.WriteStartElement("duration");
-                        xmlWriter.WriteString(tp.frameDuration.ToString());
-                        break;
-                    case TransitionType.Velocity:
-                        xmlWriter.WriteAttributeString("type", "velocity");
-                        xmlWriter.WriteStartElement("threshold");
-                        xmlWriter.WriteString(tp.velocityThreshold.ToString());
-                        xmlWriter.WriteEndElement();
-
-                        xmlWriter.WriteStartElement("duration");
-                        xmlWriter.WriteString(tp.velocityDuration.ToString());
-                        xmlWriter.WriteEndElement();
-
-                        xmlWriter.WriteStartElement("thresholdComparison");
-                        if (tp.lowerThan)
-                            xmlWriter.WriteString("lower");
-                        else
-                            xmlWriter.WriteString("higher");
-                        xmlWriter.WriteEndElement();
-                        break;
-                }
-                xmlWriter.WriteEndElement();
-
-
-                Stimulus stim = pair.Value.GetLeftStimulus();
-                xmlWriter.WriteStartElement("stimulus");
-                xmlWriter.WriteAttributeString("screen", "left");
-                xmlWriter.WriteStartElement("name");
-                xmlWriter.WriteString("test");
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("location");
-                xmlWriter.WriteString(stim.GetFilename());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("width");
-                xmlWriter.WriteString(stim.GetWidth().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("height");
-                xmlWriter.WriteString(stim.GetHeight().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("top");
-                xmlWriter.WriteString(stim.GetTop().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("left");
-                xmlWriter.WriteString(stim.GetLeft().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteEndElement();
-
-                stim = pair.Value.GetRightStimulus();
-                xmlWriter.WriteStartElement("stimulus");
-                xmlWriter.WriteAttributeString("screen", "right");
-                xmlWriter.WriteStartElement("name");
-                xmlWriter.WriteString("test");
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("location");
-                xmlWriter.WriteString(stim.GetFilename());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("width");
-                xmlWriter.WriteString(stim.GetWidth().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("height");
-                xmlWriter.WriteString(stim.GetHeight().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("top");
-                xmlWriter.WriteString(stim.GetTop().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteStartElement("left");
-                xmlWriter.WriteString(stim.GetLeft().ToString());
-                xmlWriter.WriteEndElement();
-                xmlWriter.WriteEndElement();
+                XMLWriteRewardParameters(xmlWriter, pair.Value.GetRewardParameters());
+                XMLWriteTransitionParameters(xmlWriter, pair.Value.GetTransitionParameters());
+                XMLWriteStimulusParameters(xmlWriter, pair.Value.GetLeftStimulus(), "left");
+                XMLWriteStimulusParameters(xmlWriter, pair.Value.GetRightStimulus(), "right");
 
                 xmlWriter.WriteEndElement();
             }
@@ -379,8 +149,6 @@ namespace vrClient
             {
                 bool isi;
                 string trialName;
-                string rewardType;
-                string transitionType;
                 int blockPresentations;
                 RewardParameters rp = new RewardParameters();
                 TransitionParameters tp = new TransitionParameters();
@@ -403,66 +171,25 @@ namespace vrClient
 
                 // Reward parameters
                 XmlElement xRewardParameters = (XmlElement)trialElement.GetElementsByTagName("reward")[0];
-                rewardType = xRewardParameters.GetAttribute("type");
-
-                switch (rewardType)
-                {
-                    case "velocity":
-                        rp.rewardType = RewardType.Velocity;
-                        rp.velocityDuration = Convert.ToInt32(((XmlElement)xRewardParameters.GetElementsByTagName("duration")[0]).InnerText);
-                        rp.velocityThreshold = Convert.ToDouble(((XmlElement)xRewardParameters.GetElementsByTagName("threshold")[0]).InnerText);
-                        if (((XmlElement)xRewardParameters.GetElementsByTagName("thresholdComparison")[0]).InnerText == "lower")
-                            rp.lowerThan = true;
-                        else
-                            rp.lowerThan = false;
-                        break;
-
-                    case "none":
-                        rp.rewardType = RewardType.None;
-                        break;
-                    
-                    case "random":
-                        rp.rewardType = RewardType.Random;
-                        rp.rewardCount = Convert.ToInt32(((XmlElement)xRewardParameters.GetElementsByTagName("count")[0]).InnerText);
-                        rp.rewardTotal = Convert.ToInt32(((XmlElement)xRewardParameters.GetElementsByTagName("total")[0]).InnerText);
-                        break;
-                }
+                rp = XMLReadRewardParameters(xRewardParameters);
 
                 // Transition parameters
                 XmlElement xTransitionParameters = (XmlElement)trialElement.GetElementsByTagName("transition")[0];
-                transitionType = xTransitionParameters.GetAttribute("type");
-
-                switch (transitionType)
-                {
-                    case "velocity":
-                        tp.transitionType = TransitionType.Velocity;
-                        rp.velocityDuration = Convert.ToInt32(((XmlElement)xTransitionParameters.GetElementsByTagName("duration")[0]).InnerText);
-                        rp.velocityThreshold = Convert.ToDouble(((XmlElement)xTransitionParameters.GetElementsByTagName("threshold")[0]).InnerText);
-                        if (((XmlElement)xTransitionParameters.GetElementsByTagName("thresholdComparison")[0]).Value == "lower")
-                            rp.lowerThan = true;
-                        else
-                            rp.lowerThan = false;
-                        break;
-                    case "duration":
-                        tp.transitionType = TransitionType.Frame;
-                        tp.frameDuration = Convert.ToInt32(((XmlElement)xTransitionParameters.GetElementsByTagName("duration")[0]).InnerText);
-                        break;
-                }
+                tp = XMLReadTransitionParameters(xTransitionParameters);
 
                 // Stimulus parameters
                 XmlNodeList xNodes = trialElement.GetElementsByTagName("stimulus");
-
                 XmlElement stimulus = (XmlElement)(trialElement.GetElementsByTagName("stimulus")[0]);
                 if (stimulus.GetAttribute("screen") == "left")
-                    left = ParseStimulus(stimulus);
+                    left = XMLReadStimulusParameters(stimulus);
                 else
-                    right = ParseStimulus(stimulus);
+                    right = XMLReadStimulusParameters(stimulus);
 
                 stimulus = (XmlElement)(trialElement.GetElementsByTagName("stimulus")[1]);
                 if (stimulus.GetAttribute("screen") == "right")
-                    right = ParseStimulus(stimulus);
+                    right = XMLReadStimulusParameters(stimulus);
                 else
-                    left = ParseStimulus(stimulus);
+                    left = XMLReadStimulusParameters(stimulus);
 
                 trial = new Trial(trialName);
                 trial.SetISI(isi);
@@ -479,7 +206,230 @@ namespace vrClient
             this.isiTrialName = isiTrialName;
             currentFileName = filename;
         }
-        private Stimulus ParseStimulus(XmlElement xmlStimulus)
+        public void GenerateExperiment(string filename)
+        {
+            // Prepare XML file
+            XmlWriter xmlWriter = XmlWriter.Create(filename);
+            xmlWriter.WriteStartDocument();
+            xmlWriter.WriteStartElement("experiment");
+
+
+            // Prepare a stimulus list dictionary with unique stimuli used in the experiment
+            Dictionary<string, string> stimulusDictionary = GenerateStimulusDictionary();
+            Dictionary<string, int> trialCount = GenerateTrialCount();
+            XMLWriteStimulusList(xmlWriter, stimulusDictionary);
+
+            // Generate trial order
+            List<string> blockOrder = GenerateBlockList(trialCount);
+            XMLWriteTrialList(xmlWriter, blockOrder);
+
+            // Wrap up XML file
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteEndDocument();
+            xmlWriter.Close();
+        }
+
+        // Get a dictionary with unique stimulus locations
+        public Dictionary<string,string> GenerateStimulusDictionary()
+        {
+            Dictionary<string, string> stimulusDictionary = new Dictionary<string, string>();
+            foreach (var trial in trialDictionary)
+            {
+                string leftStimulusName = trial.Value.GetLeftStimulusName();
+                string rightStimulusName = trial.Value.GetRightStimulusName();
+
+                if (!stimulusDictionary.ContainsKey(leftStimulusName))
+                    stimulusDictionary.Add(leftStimulusName, trial.Value.GetLeftStimulusLocation());
+                if (!stimulusDictionary.ContainsKey(rightStimulusName))
+                    stimulusDictionary.Add(rightStimulusName, trial.Value.GetRightStimulusLocation());
+            }
+
+            return stimulusDictionary;
+        }
+        public Dictionary<string, int> GenerateTrialCount()
+        {
+            Dictionary<string, int> trialCount = new Dictionary<string,int>();
+            foreach ( var trial in trialDictionary)
+                trialCount[trial.Value.GetName()] = trial.Value.GetBlockPresentations();
+            return trialCount;
+        }
+        public List<string> GenerateBlockList(Dictionary<string,int> trialCount)
+        {
+            List<string> blockOrder = new List<string>();
+            foreach(var value in trialCount)
+            {
+                if (value.Key != isiTrialName)
+                {
+                    for (int i = 0; i < value.Value;++i)
+                        blockOrder.Add(value.Key);
+                }
+            }
+            return blockOrder;
+        }
+        public List<string> ShuffleBlockList(List<string> blockOrder)
+        {
+            Random rnd = new Random();
+            for (int i = 0; i < blockOrder.Count; ++i)
+            {
+                string a = blockOrder[i];
+                int swapIndex = rnd.Next(1, blockOrder.Count);
+                blockOrder[i] = blockOrder[swapIndex];
+                blockOrder[swapIndex] = a;
+            }
+            return blockOrder;
+        }
+
+        // Helper functions for writing to xml files
+        public void XMLWriteStimulusList(XmlWriter xmlWriter, Dictionary<string, string> stimulusDictionary)
+        {
+            xmlWriter.WriteStartElement("stimulusList");
+            int stimulusIndex = 1;
+            foreach (var stimulus in stimulusDictionary)
+            {
+                xmlWriter.WriteStartElement("image");
+                xmlWriter.WriteAttributeString("id", stimulusIndex.ToString());
+                
+                xmlWriter.WriteStartElement("name");
+                xmlWriter.WriteString(stimulus.Key);
+                xmlWriter.WriteEndElement();
+
+                xmlWriter.WriteStartElement("location");
+                xmlWriter.WriteString(stimulus.Value);
+                xmlWriter.WriteEndElement();
+
+                xmlWriter.WriteEndElement();
+                stimulusIndex++;
+            }
+            xmlWriter.WriteEndElement();
+        }
+        public void XMLWriteTrialList(XmlWriter xmlWriter, List<string> blockOrder)
+        {
+            xmlWriter.WriteStartElement("trialList");
+
+            int trialIndex = 1;
+            for (int blockIndex = 0; blockIndex < blockCount; ++blockIndex)
+            {
+                blockOrder = ShuffleBlockList(blockOrder);
+                foreach (var trial in blockOrder)
+                {
+                    if( trialDictionary.ContainsKey(isiTrialName))
+                    {
+                        XMLWriteTrial(xmlWriter, trialDictionary[isiTrialName], trialIndex);
+                        ++trialIndex;
+                    }
+                    XMLWriteTrial(xmlWriter, trialDictionary[trial], trialIndex);
+                    ++trialIndex;
+                }
+            }
+            xmlWriter.WriteEndElement();
+        }
+        public void XMLWriteTrial(XmlWriter xmlWriter, Trial trial, int id)
+        {
+            xmlWriter.WriteStartElement("trial");
+            xmlWriter.WriteAttributeString("id",id.ToString());
+            xmlWriter.WriteAttributeString("name",trial.GetName());
+
+            XMLWriteRewardParameters(xmlWriter, trial.GetRewardParameters());
+            XMLWriteTransitionParameters(xmlWriter, trial.GetTransitionParameters());
+            XMLWriteStimulusParameters(xmlWriter, trial.GetLeftStimulus(), "left");
+            XMLWriteStimulusParameters(xmlWriter, trial.GetLeftStimulus(), "right");
+
+            xmlWriter.WriteEndElement();
+        }
+
+        public void XMLWriteRewardParameters(XmlWriter xmlWriter, RewardParameters rp)
+        {
+            xmlWriter.WriteStartElement("reward");
+            switch (rp.rewardType)
+            {
+                case RewardType.None:
+                    xmlWriter.WriteAttributeString("type", "none");
+                    break;
+                case RewardType.Random:
+                    xmlWriter.WriteAttributeString("type", "random");
+                    xmlWriter.WriteStartElement("count");
+                    xmlWriter.WriteString(rp.rewardCount.ToString());
+                    xmlWriter.WriteEndElement();
+                    xmlWriter.WriteStartElement("total");
+                    xmlWriter.WriteString(rp.rewardTotal.ToString());
+                    xmlWriter.WriteEndElement();
+                    break;
+                case RewardType.Velocity:
+                    xmlWriter.WriteAttributeString("type", "velocity");
+                    xmlWriter.WriteStartElement("threshold");
+                    xmlWriter.WriteString(rp.velocityThreshold.ToString());
+                    xmlWriter.WriteEndElement();
+                    xmlWriter.WriteStartElement("duration");
+                    xmlWriter.WriteString(rp.velocityDuration.ToString());
+                    xmlWriter.WriteEndElement();
+                    xmlWriter.WriteStartElement("thresholdComparison");
+                    if (rp.lowerThan)
+                        xmlWriter.WriteString("lower");
+                    else
+                        xmlWriter.WriteString("higher");
+                    xmlWriter.WriteEndElement();
+                    break;
+            }
+            xmlWriter.WriteEndElement();
+        }
+        public void XMLWriteTransitionParameters(XmlWriter xmlWriter, TransitionParameters tp)
+        {
+            xmlWriter.WriteStartElement("transition");
+            switch (tp.transitionType)
+            {
+                case TransitionType.Frame:
+                    xmlWriter.WriteAttributeString("type", "duration");
+                    xmlWriter.WriteStartElement("duration");
+                    xmlWriter.WriteString(tp.frameDuration.ToString());
+                    xmlWriter.WriteEndElement();
+                    break;
+                case TransitionType.Velocity:
+                    xmlWriter.WriteAttributeString("type", "velocity");
+                    xmlWriter.WriteStartElement("threshold");
+                    xmlWriter.WriteString(tp.velocityThreshold.ToString());
+                    xmlWriter.WriteEndElement();
+
+                    xmlWriter.WriteStartElement("duration");
+                    xmlWriter.WriteString(tp.velocityDuration.ToString());
+                    xmlWriter.WriteEndElement();
+
+                    xmlWriter.WriteStartElement("thresholdComparison");
+                    if (tp.lowerThan)
+                        xmlWriter.WriteString("lower");
+                    else
+                        xmlWriter.WriteString("higher");
+                    xmlWriter.WriteEndElement();
+                    break;
+            }
+            xmlWriter.WriteEndElement();
+        }
+        public void XMLWriteStimulusParameters(XmlWriter xmlWriter, Stimulus stim, string screen)
+        {
+            xmlWriter.WriteStartElement("stimulus");
+            xmlWriter.WriteAttributeString("screen", screen);
+            xmlWriter.WriteStartElement("name");
+            xmlWriter.WriteString(stim.GetName());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("location");
+            xmlWriter.WriteString(stim.GetFilename());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("width");
+            xmlWriter.WriteString(stim.GetWidth().ToString());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("height");
+            xmlWriter.WriteString(stim.GetHeight().ToString());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("top");
+            xmlWriter.WriteString(stim.GetTop().ToString());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("left");
+            xmlWriter.WriteString(stim.GetLeft().ToString());
+            xmlWriter.WriteEndElement();
+            xmlWriter.WriteEndElement();
+        }
+
+        // Helper functions for reading from xml files
+        private Stimulus XMLReadStimulusParameters(XmlElement xmlStimulus)
         {
             Stimulus stim = new Stimulus();
 
@@ -488,7 +438,9 @@ namespace vrClient
             int height = Convert.ToInt32(((XmlElement)xmlStimulus.GetElementsByTagName("height")[0]).InnerText);
             int width = Convert.ToInt32(((XmlElement)xmlStimulus.GetElementsByTagName("width")[0]).InnerText);
             string filename = ((XmlElement)xmlStimulus.GetElementsByTagName("location")[0]).InnerText;
+            string name = ((XmlElement)xmlStimulus.GetElementsByTagName("name")[0]).InnerText;
 
+            stim.SetStimulusName(name);
             stim.SetFilename(filename);
             stim.SetTop(top);
             stim.SetLeft(left);
@@ -497,6 +449,59 @@ namespace vrClient
 
             return stim;
         }
+        private RewardParameters XMLReadRewardParameters(XmlElement xmlRewardParameters)
+        {
+            RewardParameters rp = new RewardParameters();
+            string rewardType = xmlRewardParameters.GetAttribute("type");
 
+            switch (rewardType)
+            {
+                case "velocity":
+                    rp.rewardType = RewardType.Velocity;
+                    rp.velocityDuration = Convert.ToInt32(((XmlElement)xmlRewardParameters.GetElementsByTagName("duration")[0]).InnerText);
+                    rp.velocityThreshold = Convert.ToDouble(((XmlElement)xmlRewardParameters.GetElementsByTagName("threshold")[0]).InnerText);
+                    if (((XmlElement)xmlRewardParameters.GetElementsByTagName("thresholdComparison")[0]).InnerText == "lower")
+                        rp.lowerThan = true;
+                    else
+                        rp.lowerThan = false;
+                    break;
+
+                case "none":
+                    rp.rewardType = RewardType.None;
+                    break;
+
+                case "random":
+                    rp.rewardType = RewardType.Random;
+                    rp.rewardCount = Convert.ToInt32(((XmlElement)xmlRewardParameters.GetElementsByTagName("count")[0]).InnerText);
+                    rp.rewardTotal = Convert.ToInt32(((XmlElement)xmlRewardParameters.GetElementsByTagName("total")[0]).InnerText);
+                    break;
+            }
+
+            return rp;
+        }
+        private TransitionParameters XMLReadTransitionParameters(XmlElement xmlTransitionParameters)
+        {
+            TransitionParameters tp = new TransitionParameters();
+            string transitionType = xmlTransitionParameters.GetAttribute("type");
+
+            switch (transitionType)
+            {
+                case "velocity":
+                    tp.transitionType = TransitionType.Velocity;
+                    tp.velocityDuration = Convert.ToInt32(((XmlElement)xmlTransitionParameters.GetElementsByTagName("duration")[0]).InnerText);
+                    tp.velocityThreshold = Convert.ToDouble(((XmlElement)xmlTransitionParameters.GetElementsByTagName("threshold")[0]).InnerText);
+                    if (((XmlElement)xmlTransitionParameters.GetElementsByTagName("thresholdComparison")[0]).InnerText == "lower")
+                        tp.lowerThan = true;
+                    else
+                        tp.lowerThan = false;
+                    break;
+                case "duration":
+                    tp.transitionType = TransitionType.Frame;
+                    tp.frameDuration = Convert.ToInt32(((XmlElement)xmlTransitionParameters.GetElementsByTagName("duration")[0]).InnerText);
+                    break;
+            }
+
+            return tp;
+        }
     }
 }

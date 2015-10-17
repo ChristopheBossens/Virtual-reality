@@ -268,5 +268,10 @@ namespace Motionsensor
             chart_sensor1.Invalidate();
             chart_sensor2.Invalidate();
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

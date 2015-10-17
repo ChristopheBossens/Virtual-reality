@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title4 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title2 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.chart_sensor1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.yDistanceLabel = new System.Windows.Forms.Label();
@@ -68,35 +68,35 @@
             // chart_sensor1
             // 
             this.chart_sensor1.BackColor = System.Drawing.Color.Transparent;
-            chartArea3.AxisX.MajorGrid.Enabled = false;
-            chartArea3.AxisX.Title = "Time";
-            chartArea3.AxisY.MajorGrid.Enabled = false;
-            chartArea3.AxisY.MajorGrid.Interval = 0D;
-            chartArea3.AxisY.MajorTickMark.Enabled = false;
-            chartArea3.AxisY.Maximum = 20D;
-            chartArea3.AxisY.Minimum = -20D;
-            chartArea3.AxisY.Title = "Speed";
-            chartArea3.BackColor = System.Drawing.Color.White;
-            chartArea3.BorderColor = System.Drawing.Color.Transparent;
-            chartArea3.Name = "ChartArea1";
-            this.chart_sensor1.ChartAreas.Add(chartArea3);
+            chartArea1.AxisX.MajorGrid.Enabled = false;
+            chartArea1.AxisX.Title = "Time";
+            chartArea1.AxisY.MajorGrid.Enabled = false;
+            chartArea1.AxisY.MajorGrid.Interval = 0D;
+            chartArea1.AxisY.MajorTickMark.Enabled = false;
+            chartArea1.AxisY.Maximum = 20D;
+            chartArea1.AxisY.Minimum = -20D;
+            chartArea1.AxisY.Title = "Speed";
+            chartArea1.BackColor = System.Drawing.Color.White;
+            chartArea1.BorderColor = System.Drawing.Color.Transparent;
+            chartArea1.Name = "ChartArea1";
+            this.chart_sensor1.ChartAreas.Add(chartArea1);
             this.chart_sensor1.Location = new System.Drawing.Point(-7, -30);
             this.chart_sensor1.Margin = new System.Windows.Forms.Padding(0);
             this.chart_sensor1.Name = "chart_sensor1";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            series3.Color = System.Drawing.Color.OrangeRed;
-            series3.IsVisibleInLegend = false;
-            series3.IsXValueIndexed = true;
-            series3.Name = "Series1";
-            series3.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
-            this.chart_sensor1.Series.Add(series3);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series1.Color = System.Drawing.Color.OrangeRed;
+            series1.IsVisibleInLegend = false;
+            series1.IsXValueIndexed = true;
+            series1.Name = "Series1";
+            series1.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            this.chart_sensor1.Series.Add(series1);
             this.chart_sensor1.Size = new System.Drawing.Size(461, 328);
             this.chart_sensor1.TabIndex = 0;
             this.chart_sensor1.Text = "sensor_1";
             this.chart_sensor1.TextAntiAliasingQuality = System.Windows.Forms.DataVisualization.Charting.TextAntiAliasingQuality.Normal;
-            title3.Name = "Sensor 1";
-            this.chart_sensor1.Titles.Add(title3);
+            title1.Name = "Sensor 1";
+            this.chart_sensor1.Titles.Add(title1);
             // 
             // groupBox1
             // 
@@ -310,35 +310,35 @@
             // chart_sensor2
             // 
             this.chart_sensor2.BackColor = System.Drawing.Color.Transparent;
-            chartArea4.AxisX.MajorGrid.Enabled = false;
-            chartArea4.AxisX.Title = "Time";
-            chartArea4.AxisY.MajorGrid.Enabled = false;
-            chartArea4.AxisY.MajorGrid.Interval = 0D;
-            chartArea4.AxisY.MajorTickMark.Enabled = false;
-            chartArea4.AxisY.Maximum = 20D;
-            chartArea4.AxisY.Minimum = -20D;
-            chartArea4.AxisY.Title = "Speed";
-            chartArea4.BackColor = System.Drawing.Color.White;
-            chartArea4.BorderColor = System.Drawing.Color.Transparent;
-            chartArea4.Name = "ChartArea1";
-            this.chart_sensor2.ChartAreas.Add(chartArea4);
+            chartArea2.AxisX.MajorGrid.Enabled = false;
+            chartArea2.AxisX.Title = "Time";
+            chartArea2.AxisY.MajorGrid.Enabled = false;
+            chartArea2.AxisY.MajorGrid.Interval = 0D;
+            chartArea2.AxisY.MajorTickMark.Enabled = false;
+            chartArea2.AxisY.Maximum = 20D;
+            chartArea2.AxisY.Minimum = -20D;
+            chartArea2.AxisY.Title = "Speed";
+            chartArea2.BackColor = System.Drawing.Color.White;
+            chartArea2.BorderColor = System.Drawing.Color.Transparent;
+            chartArea2.Name = "ChartArea1";
+            this.chart_sensor2.ChartAreas.Add(chartArea2);
             this.chart_sensor2.Location = new System.Drawing.Point(-7, 249);
             this.chart_sensor2.Margin = new System.Windows.Forms.Padding(0);
             this.chart_sensor2.Name = "chart_sensor2";
-            series4.ChartArea = "ChartArea1";
-            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            series4.Color = System.Drawing.Color.OrangeRed;
-            series4.IsVisibleInLegend = false;
-            series4.IsXValueIndexed = true;
-            series4.Name = "Series1";
-            series4.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
-            this.chart_sensor2.Series.Add(series4);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series2.Color = System.Drawing.Color.OrangeRed;
+            series2.IsVisibleInLegend = false;
+            series2.IsXValueIndexed = true;
+            series2.Name = "Series1";
+            series2.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            this.chart_sensor2.Series.Add(series2);
             this.chart_sensor2.Size = new System.Drawing.Size(461, 328);
             this.chart_sensor2.TabIndex = 2;
             this.chart_sensor2.Text = "sensor_1";
             this.chart_sensor2.TextAntiAliasingQuality = System.Windows.Forms.DataVisualization.Charting.TextAntiAliasingQuality.Normal;
-            title4.Name = "Sensor 1";
-            this.chart_sensor2.Titles.Add(title4);
+            title2.Name = "Sensor 1";
+            this.chart_sensor2.Titles.Add(title2);
             // 
             // Form1
             // 
@@ -350,6 +350,7 @@
             this.Controls.Add(this.chart_sensor1);
             this.Name = "Form1";
             this.Text = "Motion sensor";
+            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart_sensor1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

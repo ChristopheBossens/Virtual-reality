@@ -28,25 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button4 = new System.Windows.Forms.Button();
-            this.label26 = new System.Windows.Forms.Label();
-            this.config_files = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.incoming_text = new System.Windows.Forms.Label();
-            this.command_text = new System.Windows.Forms.TextBox();
-            this.send_command = new System.Windows.Forms.Button();
+            this.disconnect_button = new System.Windows.Forms.Button();
+            this.run_experiment = new System.Windows.Forms.Button();
+            this.load_custom_xml = new System.Windows.Forms.Button();
+            this.load_config_xml = new System.Windows.Forms.Button();
             this.port_text = new System.Windows.Forms.TextBox();
             this.ip_text = new System.Windows.Forms.TextBox();
             this.connect_button = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.overview_tab = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.cheetah_server_messages = new System.Windows.Forms.ListBox();
+            this.matlab_server_messages = new System.Windows.Forms.ListBox();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.remove_trial = new System.Windows.Forms.Button();
             this.update_trial = new System.Windows.Forms.Button();
             this.trial_name = new System.Windows.Forms.TextBox();
             this.block_presentations = new System.Windows.Forms.NumericUpDown();
@@ -54,7 +55,8 @@
             this.label20 = new System.Windows.Forms.Label();
             this.add_trial = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.upload_configuration = new System.Windows.Forms.Button();
+            this.remove_trial = new System.Windows.Forms.Button();
+            this.generate_experiment_xml = new System.Windows.Forms.Button();
             this.save_configuration = new System.Windows.Forms.Button();
             this.load_configuration = new System.Windows.Forms.Button();
             this.block_count = new System.Windows.Forms.NumericUpDown();
@@ -87,6 +89,10 @@
             this.transition_velocity = new System.Windows.Forms.RadioButton();
             this.transition_frame = new System.Windows.Forms.RadioButton();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.right_stimulus_name = new System.Windows.Forms.Label();
+            this.label29 = new System.Windows.Forms.Label();
+            this.left_stimulus_name = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
             this.right_stimulus_left = new System.Windows.Forms.TextBox();
             this.right_stimulus_top = new System.Windows.Forms.TextBox();
             this.left_stimulus_left = new System.Windows.Forms.TextBox();
@@ -111,14 +117,31 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.label25 = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.grating_center_y = new System.Windows.Forms.Label();
+            this.grating_center_x = new System.Windows.Forms.Label();
+            this.label28 = new System.Windows.Forms.Label();
+            this.label26 = new System.Windows.Forms.Label();
+            this.rf_spike_plot = new System.Windows.Forms.Label();
+            this.rf_grating_position = new System.Windows.Forms.Label();
+            this.start_manual_mapping = new System.Windows.Forms.Button();
+            this.start_automatic_mapping = new System.Windows.Forms.Button();
             this.ofDialog = new System.Windows.Forms.OpenFileDialog();
+            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pSTHToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.netcom_server_port = new System.Windows.Forms.TextBox();
+            this.netcom_server_ip = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.netcom_server_connect = new System.Windows.Forms.Button();
+            this.netcom_command = new System.Windows.Forms.TextBox();
+            this.netcom_send_command = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.overview_tab.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.groupBox7.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.block_presentations)).BeginInit();
@@ -137,17 +160,16 @@
             ((System.ComponentModel.ISupportInitialize)(this.right_stimulus)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.left_stimulus)).BeginInit();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button4);
-            this.groupBox1.Controls.Add(this.label26);
-            this.groupBox1.Controls.Add(this.config_files);
-            this.groupBox1.Controls.Add(this.button1);
-            this.groupBox1.Controls.Add(this.incoming_text);
-            this.groupBox1.Controls.Add(this.command_text);
-            this.groupBox1.Controls.Add(this.send_command);
+            this.groupBox1.Controls.Add(this.disconnect_button);
+            this.groupBox1.Controls.Add(this.run_experiment);
+            this.groupBox1.Controls.Add(this.load_custom_xml);
+            this.groupBox1.Controls.Add(this.load_config_xml);
             this.groupBox1.Controls.Add(this.port_text);
             this.groupBox1.Controls.Add(this.ip_text);
             this.groupBox1.Controls.Add(this.connect_button);
@@ -155,74 +177,57 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(400, 484);
+            this.groupBox1.Size = new System.Drawing.Size(445, 364);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "VR connection";
             // 
-            // button4
+            // disconnect_button
             // 
-            this.button4.Location = new System.Drawing.Point(205, 369);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(187, 47);
-            this.button4.TabIndex = 8;
-            this.button4.Text = "Use custom XML";
-            this.button4.UseVisualStyleBackColor = true;
+            this.disconnect_button.Enabled = false;
+            this.disconnect_button.Location = new System.Drawing.Point(292, 52);
+            this.disconnect_button.Name = "disconnect_button";
+            this.disconnect_button.Size = new System.Drawing.Size(90, 24);
+            this.disconnect_button.TabIndex = 11;
+            this.disconnect_button.Text = "Disconnect";
+            this.disconnect_button.UseVisualStyleBackColor = true;
+            this.disconnect_button.Click += new System.EventHandler(this.disconnect_button_Click);
             // 
-            // label26
+            // run_experiment
             // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(9, 164);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(119, 13);
-            this.label26.TabIndex = 7;
-            this.label26.Text = "Available configurations";
+            this.run_experiment.Enabled = false;
+            this.run_experiment.Location = new System.Drawing.Point(283, 311);
+            this.run_experiment.Name = "run_experiment";
+            this.run_experiment.Size = new System.Drawing.Size(122, 47);
+            this.run_experiment.TabIndex = 10;
+            this.run_experiment.Text = "Run experiment";
+            this.run_experiment.UseVisualStyleBackColor = true;
+            this.run_experiment.Click += new System.EventHandler(this.run_experiment_Click);
             // 
-            // config_files
+            // load_custom_xml
             // 
-            this.config_files.FormattingEnabled = true;
-            this.config_files.Location = new System.Drawing.Point(9, 190);
-            this.config_files.Name = "config_files";
-            this.config_files.Size = new System.Drawing.Size(190, 173);
-            this.config_files.TabIndex = 6;
+            this.load_custom_xml.Enabled = false;
+            this.load_custom_xml.Location = new System.Drawing.Point(155, 311);
+            this.load_custom_xml.Name = "load_custom_xml";
+            this.load_custom_xml.Size = new System.Drawing.Size(122, 47);
+            this.load_custom_xml.TabIndex = 9;
+            this.load_custom_xml.Text = "Load custom XML";
+            this.load_custom_xml.UseVisualStyleBackColor = true;
+            this.load_custom_xml.Click += new System.EventHandler(this.load_custom_xml_Click);
             // 
-            // button1
+            // load_config_xml
             // 
-            this.button1.Location = new System.Drawing.Point(9, 369);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(190, 47);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "XML from config";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // incoming_text
-            // 
-            this.incoming_text.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.incoming_text.Location = new System.Drawing.Point(11, 111);
-            this.incoming_text.Name = "incoming_text";
-            this.incoming_text.Size = new System.Drawing.Size(117, 25);
-            this.incoming_text.TabIndex = 4;
-            // 
-            // command_text
-            // 
-            this.command_text.Location = new System.Drawing.Point(9, 74);
-            this.command_text.Name = "command_text";
-            this.command_text.Size = new System.Drawing.Size(119, 20);
-            this.command_text.TabIndex = 1;
-            // 
-            // send_command
-            // 
-            this.send_command.Location = new System.Drawing.Point(205, 154);
-            this.send_command.Name = "send_command";
-            this.send_command.Size = new System.Drawing.Size(90, 23);
-            this.send_command.TabIndex = 3;
-            this.send_command.Text = "Request config files";
-            this.send_command.UseVisualStyleBackColor = true;
-            this.send_command.Click += new System.EventHandler(this.send_command_Click);
+            this.load_config_xml.Enabled = false;
+            this.load_config_xml.Location = new System.Drawing.Point(29, 311);
+            this.load_config_xml.Name = "load_config_xml";
+            this.load_config_xml.Size = new System.Drawing.Size(122, 47);
+            this.load_config_xml.TabIndex = 8;
+            this.load_config_xml.Text = "Load XML from config";
+            this.load_config_xml.UseVisualStyleBackColor = true;
             // 
             // port_text
             // 
-            this.port_text.Location = new System.Drawing.Point(29, 45);
+            this.port_text.Location = new System.Drawing.Point(178, 25);
             this.port_text.Name = "port_text";
             this.port_text.Size = new System.Drawing.Size(99, 20);
             this.port_text.TabIndex = 1;
@@ -234,11 +239,11 @@
             this.ip_text.Name = "ip_text";
             this.ip_text.Size = new System.Drawing.Size(99, 20);
             this.ip_text.TabIndex = 2;
-            this.ip_text.Text = "127.0.0.1";
+            this.ip_text.Text = "169.254.209.8";
             // 
             // connect_button
             // 
-            this.connect_button.Location = new System.Drawing.Point(167, 25);
+            this.connect_button.Location = new System.Drawing.Point(292, 22);
             this.connect_button.Name = "connect_button";
             this.connect_button.Size = new System.Drawing.Size(90, 24);
             this.connect_button.TabIndex = 1;
@@ -249,7 +254,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 48);
+            this.label2.Location = new System.Drawing.Point(146, 28);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(26, 13);
             this.label2.TabIndex = 1;
@@ -264,19 +269,21 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "IP";
             // 
-            // tabControl1
+            // overview_tab
             // 
-            this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(5, 12);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(919, 664);
-            this.tabControl1.TabIndex = 1;
+            this.overview_tab.Controls.Add(this.tabPage3);
+            this.overview_tab.Controls.Add(this.tabPage1);
+            this.overview_tab.Controls.Add(this.tabPage2);
+            this.overview_tab.Location = new System.Drawing.Point(6, 27);
+            this.overview_tab.Name = "overview_tab";
+            this.overview_tab.SelectedIndex = 0;
+            this.overview_tab.Size = new System.Drawing.Size(919, 664);
+            this.overview_tab.TabIndex = 1;
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.cheetah_server_messages);
+            this.tabPage3.Controls.Add(this.matlab_server_messages);
             this.tabPage3.Controls.Add(this.groupBox7);
             this.tabPage3.Controls.Add(this.groupBox1);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
@@ -286,14 +293,43 @@
             this.tabPage3.Text = "Experiment control";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // cheetah_server_messages
+            // 
+            this.cheetah_server_messages.BackColor = System.Drawing.SystemColors.Info;
+            this.cheetah_server_messages.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.cheetah_server_messages.FormattingEnabled = true;
+            this.cheetah_server_messages.Location = new System.Drawing.Point(463, 377);
+            this.cheetah_server_messages.Name = "cheetah_server_messages";
+            this.cheetah_server_messages.ScrollAlwaysVisible = true;
+            this.cheetah_server_messages.Size = new System.Drawing.Size(445, 251);
+            this.cheetah_server_messages.TabIndex = 5;
+            // 
+            // matlab_server_messages
+            // 
+            this.matlab_server_messages.BackColor = System.Drawing.SystemColors.Info;
+            this.matlab_server_messages.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.matlab_server_messages.FormattingEnabled = true;
+            this.matlab_server_messages.Location = new System.Drawing.Point(3, 377);
+            this.matlab_server_messages.Name = "matlab_server_messages";
+            this.matlab_server_messages.ScrollAlwaysVisible = true;
+            this.matlab_server_messages.Size = new System.Drawing.Size(445, 251);
+            this.matlab_server_messages.TabIndex = 4;
+            // 
             // groupBox7
             // 
-            this.groupBox7.Location = new System.Drawing.Point(582, 3);
+            this.groupBox7.Controls.Add(this.netcom_send_command);
+            this.groupBox7.Controls.Add(this.netcom_command);
+            this.groupBox7.Controls.Add(this.netcom_server_port);
+            this.groupBox7.Controls.Add(this.netcom_server_connect);
+            this.groupBox7.Controls.Add(this.netcom_server_ip);
+            this.groupBox7.Controls.Add(this.label25);
+            this.groupBox7.Controls.Add(this.label24);
+            this.groupBox7.Location = new System.Drawing.Point(463, 3);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(326, 239);
+            this.groupBox7.Size = new System.Drawing.Size(445, 364);
             this.groupBox7.TabIndex = 3;
             this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Cheetah connection";
+            this.groupBox7.Text = "Cheetah NetCom Server";
             // 
             // tabPage1
             // 
@@ -312,7 +348,6 @@
             // 
             // groupBox6
             // 
-            this.groupBox6.Controls.Add(this.remove_trial);
             this.groupBox6.Controls.Add(this.update_trial);
             this.groupBox6.Controls.Add(this.trial_name);
             this.groupBox6.Controls.Add(this.block_presentations);
@@ -321,23 +356,15 @@
             this.groupBox6.Controls.Add(this.add_trial);
             this.groupBox6.Location = new System.Drawing.Point(526, 9);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(379, 112);
+            this.groupBox6.Size = new System.Drawing.Size(379, 94);
             this.groupBox6.TabIndex = 11;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Add trial to experiment";
             // 
-            // remove_trial
-            // 
-            this.remove_trial.Location = new System.Drawing.Point(298, 77);
-            this.remove_trial.Name = "remove_trial";
-            this.remove_trial.Size = new System.Drawing.Size(77, 30);
-            this.remove_trial.TabIndex = 13;
-            this.remove_trial.Text = "Remove trial";
-            this.remove_trial.UseVisualStyleBackColor = true;
-            // 
             // update_trial
             // 
-            this.update_trial.Location = new System.Drawing.Point(298, 46);
+            this.update_trial.Enabled = false;
+            this.update_trial.Location = new System.Drawing.Point(289, 50);
             this.update_trial.Name = "update_trial";
             this.update_trial.Size = new System.Drawing.Size(77, 30);
             this.update_trial.TabIndex = 14;
@@ -354,7 +381,7 @@
             // 
             // block_presentations
             // 
-            this.block_presentations.Location = new System.Drawing.Point(146, 68);
+            this.block_presentations.Location = new System.Drawing.Point(146, 59);
             this.block_presentations.Name = "block_presentations";
             this.block_presentations.Size = new System.Drawing.Size(49, 20);
             this.block_presentations.TabIndex = 7;
@@ -367,7 +394,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(6, 68);
+            this.label23.Location = new System.Drawing.Point(8, 61);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(118, 13);
             this.label23.TabIndex = 8;
@@ -384,7 +411,7 @@
             // 
             // add_trial
             // 
-            this.add_trial.Location = new System.Drawing.Point(298, 15);
+            this.add_trial.Location = new System.Drawing.Point(289, 14);
             this.add_trial.Name = "add_trial";
             this.add_trial.Size = new System.Drawing.Size(77, 30);
             this.add_trial.TabIndex = 12;
@@ -394,7 +421,8 @@
             // 
             // groupBox5
             // 
-            this.groupBox5.Controls.Add(this.upload_configuration);
+            this.groupBox5.Controls.Add(this.remove_trial);
+            this.groupBox5.Controls.Add(this.generate_experiment_xml);
             this.groupBox5.Controls.Add(this.save_configuration);
             this.groupBox5.Controls.Add(this.load_configuration);
             this.groupBox5.Controls.Add(this.block_count);
@@ -404,26 +432,35 @@
             this.groupBox5.Controls.Add(this.isi_trial);
             this.groupBox5.Controls.Add(this.label19);
             this.groupBox5.Controls.Add(this.trial_list);
-            this.groupBox5.Location = new System.Drawing.Point(526, 183);
+            this.groupBox5.Location = new System.Drawing.Point(526, 112);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(379, 331);
+            this.groupBox5.Size = new System.Drawing.Size(379, 298);
             this.groupBox5.TabIndex = 10;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Experiment overview";
             // 
-            // upload_configuration
+            // remove_trial
             // 
-            this.upload_configuration.Location = new System.Drawing.Point(252, 293);
-            this.upload_configuration.Name = "upload_configuration";
-            this.upload_configuration.Size = new System.Drawing.Size(122, 30);
-            this.upload_configuration.TabIndex = 12;
-            this.upload_configuration.Text = "Upload configuration";
-            this.upload_configuration.UseVisualStyleBackColor = true;
-            this.upload_configuration.Click += new System.EventHandler(this.upload_configuration_Click);
+            this.remove_trial.Location = new System.Drawing.Point(181, 141);
+            this.remove_trial.Name = "remove_trial";
+            this.remove_trial.Size = new System.Drawing.Size(77, 30);
+            this.remove_trial.TabIndex = 13;
+            this.remove_trial.Text = "Remove trial";
+            this.remove_trial.UseVisualStyleBackColor = true;
+            // 
+            // generate_experiment_xml
+            // 
+            this.generate_experiment_xml.Location = new System.Drawing.Point(250, 259);
+            this.generate_experiment_xml.Name = "generate_experiment_xml";
+            this.generate_experiment_xml.Size = new System.Drawing.Size(122, 30);
+            this.generate_experiment_xml.TabIndex = 12;
+            this.generate_experiment_xml.Text = "Generate experiment";
+            this.generate_experiment_xml.UseVisualStyleBackColor = true;
+            this.generate_experiment_xml.Click += new System.EventHandler(this.xml_from_config_Click);
             // 
             // save_configuration
             // 
-            this.save_configuration.Location = new System.Drawing.Point(4, 293);
+            this.save_configuration.Location = new System.Drawing.Point(2, 259);
             this.save_configuration.Name = "save_configuration";
             this.save_configuration.Size = new System.Drawing.Size(122, 30);
             this.save_configuration.TabIndex = 11;
@@ -433,7 +470,7 @@
             // 
             // load_configuration
             // 
-            this.load_configuration.Location = new System.Drawing.Point(128, 293);
+            this.load_configuration.Location = new System.Drawing.Point(126, 259);
             this.load_configuration.Name = "load_configuration";
             this.load_configuration.Size = new System.Drawing.Size(122, 30);
             this.load_configuration.TabIndex = 10;
@@ -464,7 +501,7 @@
             // 
             // set_isi_trial
             // 
-            this.set_isi_trial.Location = new System.Drawing.Point(181, 96);
+            this.set_isi_trial.Location = new System.Drawing.Point(181, 50);
             this.set_isi_trial.Name = "set_isi_trial";
             this.set_isi_trial.Size = new System.Drawing.Size(30, 26);
             this.set_isi_trial.TabIndex = 4;
@@ -484,7 +521,7 @@
             // isi_trial
             // 
             this.isi_trial.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.isi_trial.Location = new System.Drawing.Point(250, 96);
+            this.isi_trial.Location = new System.Drawing.Point(240, 56);
             this.isi_trial.Name = "isi_trial";
             this.isi_trial.Size = new System.Drawing.Size(123, 27);
             this.isi_trial.TabIndex = 2;
@@ -492,7 +529,7 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(247, 69);
+            this.label19.Location = new System.Drawing.Point(237, 31);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(42, 13);
             this.label19.TabIndex = 1;
@@ -531,7 +568,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(313, 53);
+            this.label12.Location = new System.Drawing.Point(313, 58);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(28, 13);
             this.label12.TabIndex = 17;
@@ -540,7 +577,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(177, 53);
+            this.label11.Location = new System.Drawing.Point(177, 58);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(34, 13);
             this.label11.TabIndex = 9;
@@ -548,14 +585,14 @@
             // 
             // reward_random_total
             // 
-            this.reward_random_total.Location = new System.Drawing.Point(230, 51);
+            this.reward_random_total.Location = new System.Drawing.Point(230, 56);
             this.reward_random_total.Name = "reward_random_total";
             this.reward_random_total.Size = new System.Drawing.Size(77, 20);
             this.reward_random_total.TabIndex = 16;
             // 
             // reward_random_count
             // 
-            this.reward_random_count.Location = new System.Drawing.Point(122, 51);
+            this.reward_random_count.Location = new System.Drawing.Point(122, 56);
             this.reward_random_count.Name = "reward_random_count";
             this.reward_random_count.Size = new System.Drawing.Size(38, 20);
             this.reward_random_count.TabIndex = 15;
@@ -563,7 +600,7 @@
             // reward_random
             // 
             this.reward_random.AutoSize = true;
-            this.reward_random.Location = new System.Drawing.Point(6, 51);
+            this.reward_random.Location = new System.Drawing.Point(6, 56);
             this.reward_random.Name = "reward_random";
             this.reward_random.Size = new System.Drawing.Size(68, 17);
             this.reward_random.TabIndex = 14;
@@ -573,7 +610,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(474, 76);
+            this.label9.Location = new System.Drawing.Point(474, 86);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(38, 13);
             this.label9.TabIndex = 13;
@@ -581,7 +618,12 @@
             // 
             // reward_velocity_duration
             // 
-            this.reward_velocity_duration.Location = new System.Drawing.Point(382, 74);
+            this.reward_velocity_duration.Location = new System.Drawing.Point(382, 84);
+            this.reward_velocity_duration.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
             this.reward_velocity_duration.Name = "reward_velocity_duration";
             this.reward_velocity_duration.Size = new System.Drawing.Size(77, 20);
             this.reward_velocity_duration.TabIndex = 12;
@@ -589,7 +631,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(313, 76);
+            this.label10.Location = new System.Drawing.Point(313, 86);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(63, 13);
             this.label10.TabIndex = 8;
@@ -597,7 +639,7 @@
             // 
             // reward_velocity_threshold
             // 
-            this.reward_velocity_threshold.Location = new System.Drawing.Point(230, 74);
+            this.reward_velocity_threshold.Location = new System.Drawing.Point(230, 84);
             this.reward_velocity_threshold.Name = "reward_velocity_threshold";
             this.reward_velocity_threshold.Size = new System.Drawing.Size(77, 20);
             this.reward_velocity_threshold.TabIndex = 11;
@@ -609,7 +651,7 @@
             this.reward_velocity_comparison.Items.AddRange(new object[] {
             "Above",
             "Below"});
-            this.reward_velocity_comparison.Location = new System.Drawing.Point(122, 73);
+            this.reward_velocity_comparison.Location = new System.Drawing.Point(122, 83);
             this.reward_velocity_comparison.Name = "reward_velocity_comparison";
             this.reward_velocity_comparison.Size = new System.Drawing.Size(77, 21);
             this.reward_velocity_comparison.TabIndex = 10;
@@ -617,7 +659,7 @@
             // reward_velocity
             // 
             this.reward_velocity.AutoSize = true;
-            this.reward_velocity.Location = new System.Drawing.Point(6, 74);
+            this.reward_velocity.Location = new System.Drawing.Point(6, 84);
             this.reward_velocity.Name = "reward_velocity";
             this.reward_velocity.Size = new System.Drawing.Size(111, 17);
             this.reward_velocity.TabIndex = 9;
@@ -656,6 +698,11 @@
             // transition_frame_duration
             // 
             this.transition_frame_duration.Location = new System.Drawing.Point(120, 29);
+            this.transition_frame_duration.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
             this.transition_frame_duration.Name = "transition_frame_duration";
             this.transition_frame_duration.Size = new System.Drawing.Size(77, 20);
             this.transition_frame_duration.TabIndex = 8;
@@ -663,7 +710,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(472, 54);
+            this.label8.Location = new System.Drawing.Point(472, 64);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(38, 13);
             this.label8.TabIndex = 7;
@@ -671,7 +718,12 @@
             // 
             // transition_velocity_duration
             // 
-            this.transition_velocity_duration.Location = new System.Drawing.Point(380, 52);
+            this.transition_velocity_duration.Location = new System.Drawing.Point(380, 62);
+            this.transition_velocity_duration.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
             this.transition_velocity_duration.Name = "transition_velocity_duration";
             this.transition_velocity_duration.Size = new System.Drawing.Size(77, 20);
             this.transition_velocity_duration.TabIndex = 6;
@@ -679,7 +731,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(311, 54);
+            this.label7.Location = new System.Drawing.Point(311, 64);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(63, 13);
             this.label7.TabIndex = 2;
@@ -687,7 +739,7 @@
             // 
             // transition_velocity_threshold
             // 
-            this.transition_velocity_threshold.Location = new System.Drawing.Point(228, 52);
+            this.transition_velocity_threshold.Location = new System.Drawing.Point(228, 62);
             this.transition_velocity_threshold.Name = "transition_velocity_threshold";
             this.transition_velocity_threshold.Size = new System.Drawing.Size(77, 20);
             this.transition_velocity_threshold.TabIndex = 5;
@@ -699,7 +751,7 @@
             this.transition_velocity_comparison.Items.AddRange(new object[] {
             "Above",
             "Below"});
-            this.transition_velocity_comparison.Location = new System.Drawing.Point(120, 51);
+            this.transition_velocity_comparison.Location = new System.Drawing.Point(120, 61);
             this.transition_velocity_comparison.Name = "transition_velocity_comparison";
             this.transition_velocity_comparison.Size = new System.Drawing.Size(77, 21);
             this.transition_velocity_comparison.TabIndex = 4;
@@ -707,7 +759,7 @@
             // transition_velocity
             // 
             this.transition_velocity.AutoSize = true;
-            this.transition_velocity.Location = new System.Drawing.Point(6, 52);
+            this.transition_velocity.Location = new System.Drawing.Point(6, 62);
             this.transition_velocity.Name = "transition_velocity";
             this.transition_velocity.Size = new System.Drawing.Size(111, 17);
             this.transition_velocity.TabIndex = 3;
@@ -728,6 +780,10 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.right_stimulus_name);
+            this.groupBox2.Controls.Add(this.label29);
+            this.groupBox2.Controls.Add(this.left_stimulus_name);
+            this.groupBox2.Controls.Add(this.label27);
             this.groupBox2.Controls.Add(this.right_stimulus_left);
             this.groupBox2.Controls.Add(this.right_stimulus_top);
             this.groupBox2.Controls.Add(this.left_stimulus_left);
@@ -753,35 +809,69 @@
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Location = new System.Drawing.Point(6, 233);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(512, 281);
+            this.groupBox2.Size = new System.Drawing.Size(512, 399);
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Trial stimulus";
             // 
+            // right_stimulus_name
+            // 
+            this.right_stimulus_name.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.right_stimulus_name.Location = new System.Drawing.Point(404, 193);
+            this.right_stimulus_name.Name = "right_stimulus_name";
+            this.right_stimulus_name.Size = new System.Drawing.Size(81, 18);
+            this.right_stimulus_name.TabIndex = 31;
+            // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Location = new System.Drawing.Point(311, 194);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(35, 13);
+            this.label29.TabIndex = 30;
+            this.label29.Text = "Name";
+            // 
+            // left_stimulus_name
+            // 
+            this.left_stimulus_name.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.left_stimulus_name.Location = new System.Drawing.Point(116, 198);
+            this.left_stimulus_name.Name = "left_stimulus_name";
+            this.left_stimulus_name.Size = new System.Drawing.Size(81, 18);
+            this.left_stimulus_name.TabIndex = 29;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(6, 194);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(35, 13);
+            this.label27.TabIndex = 28;
+            this.label27.Text = "Name";
+            // 
             // right_stimulus_left
             // 
-            this.right_stimulus_left.Location = new System.Drawing.Point(424, 231);
+            this.right_stimulus_left.Location = new System.Drawing.Point(404, 270);
             this.right_stimulus_left.Name = "right_stimulus_left";
             this.right_stimulus_left.Size = new System.Drawing.Size(81, 20);
             this.right_stimulus_left.TabIndex = 27;
             // 
             // right_stimulus_top
             // 
-            this.right_stimulus_top.Location = new System.Drawing.Point(424, 213);
+            this.right_stimulus_top.Location = new System.Drawing.Point(404, 252);
             this.right_stimulus_top.Name = "right_stimulus_top";
             this.right_stimulus_top.Size = new System.Drawing.Size(81, 20);
             this.right_stimulus_top.TabIndex = 26;
             // 
             // left_stimulus_left
             // 
-            this.left_stimulus_left.Location = new System.Drawing.Point(116, 234);
+            this.left_stimulus_left.Location = new System.Drawing.Point(116, 270);
             this.left_stimulus_left.Name = "left_stimulus_left";
             this.left_stimulus_left.Size = new System.Drawing.Size(81, 20);
             this.left_stimulus_left.TabIndex = 25;
             // 
             // left_stimulus_top
             // 
-            this.left_stimulus_top.Location = new System.Drawing.Point(116, 216);
+            this.left_stimulus_top.Location = new System.Drawing.Point(116, 251);
             this.left_stimulus_top.Name = "left_stimulus_top";
             this.left_stimulus_top.Size = new System.Drawing.Size(81, 20);
             this.left_stimulus_top.TabIndex = 24;
@@ -789,7 +879,7 @@
             // right_stimulus_height
             // 
             this.right_stimulus_height.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.right_stimulus_height.Location = new System.Drawing.Point(424, 194);
+            this.right_stimulus_height.Location = new System.Drawing.Point(404, 235);
             this.right_stimulus_height.Name = "right_stimulus_height";
             this.right_stimulus_height.Size = new System.Drawing.Size(81, 18);
             this.right_stimulus_height.TabIndex = 23;
@@ -797,7 +887,7 @@
             // right_stimulus_width
             // 
             this.right_stimulus_width.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.right_stimulus_width.Location = new System.Drawing.Point(424, 175);
+            this.right_stimulus_width.Location = new System.Drawing.Point(404, 215);
             this.right_stimulus_width.Name = "right_stimulus_width";
             this.right_stimulus_width.Size = new System.Drawing.Size(81, 18);
             this.right_stimulus_width.TabIndex = 22;
@@ -805,7 +895,7 @@
             // left_stimulus_height
             // 
             this.left_stimulus_height.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.left_stimulus_height.Location = new System.Drawing.Point(116, 199);
+            this.left_stimulus_height.Location = new System.Drawing.Point(116, 235);
             this.left_stimulus_height.Name = "left_stimulus_height";
             this.left_stimulus_height.Size = new System.Drawing.Size(81, 18);
             this.left_stimulus_height.TabIndex = 21;
@@ -813,7 +903,7 @@
             // left_stimulus_width
             // 
             this.left_stimulus_width.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.left_stimulus_width.Location = new System.Drawing.Point(116, 180);
+            this.left_stimulus_width.Location = new System.Drawing.Point(116, 216);
             this.left_stimulus_width.Name = "left_stimulus_width";
             this.left_stimulus_width.Size = new System.Drawing.Size(81, 18);
             this.left_stimulus_width.TabIndex = 20;
@@ -826,6 +916,7 @@
             this.copy_left_stimulus.TabIndex = 19;
             this.copy_left_stimulus.Text = ">>";
             this.copy_left_stimulus.UseVisualStyleBackColor = true;
+            this.copy_left_stimulus.Click += new System.EventHandler(this.copy_left_stimulus_Click);
             // 
             // load_right_stimulus
             // 
@@ -850,7 +941,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(309, 257);
+            this.label14.Location = new System.Drawing.Point(310, 293);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(85, 13);
             this.label14.TabIndex = 16;
@@ -859,7 +950,7 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(309, 234);
+            this.label15.Location = new System.Drawing.Point(310, 270);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(25, 13);
             this.label15.TabIndex = 15;
@@ -868,7 +959,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(309, 216);
+            this.label16.Location = new System.Drawing.Point(310, 252);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(26, 13);
             this.label16.TabIndex = 14;
@@ -877,7 +968,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(309, 199);
+            this.label17.Location = new System.Drawing.Point(310, 235);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(38, 13);
             this.label17.TabIndex = 13;
@@ -886,7 +977,7 @@
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(309, 180);
+            this.label18.Location = new System.Drawing.Point(310, 216);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(35, 13);
             this.label18.TabIndex = 12;
@@ -915,7 +1006,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(6, 257);
+            this.label13.Location = new System.Drawing.Point(6, 293);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(85, 13);
             this.label13.TabIndex = 4;
@@ -924,7 +1015,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 234);
+            this.label6.Location = new System.Drawing.Point(6, 270);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(25, 13);
             this.label6.TabIndex = 3;
@@ -933,7 +1024,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 216);
+            this.label5.Location = new System.Drawing.Point(6, 252);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(26, 13);
             this.label5.TabIndex = 2;
@@ -942,7 +1033,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 199);
+            this.label4.Location = new System.Drawing.Point(6, 235);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(38, 13);
             this.label4.TabIndex = 1;
@@ -951,7 +1042,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 180);
+            this.label3.Location = new System.Drawing.Point(6, 216);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(35, 13);
             this.label3.TabIndex = 0;
@@ -959,10 +1050,14 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.label25);
-            this.tabPage2.Controls.Add(this.label24);
-            this.tabPage2.Controls.Add(this.button3);
-            this.tabPage2.Controls.Add(this.button2);
+            this.tabPage2.Controls.Add(this.grating_center_y);
+            this.tabPage2.Controls.Add(this.grating_center_x);
+            this.tabPage2.Controls.Add(this.label28);
+            this.tabPage2.Controls.Add(this.label26);
+            this.tabPage2.Controls.Add(this.rf_spike_plot);
+            this.tabPage2.Controls.Add(this.rf_grating_position);
+            this.tabPage2.Controls.Add(this.start_manual_mapping);
+            this.tabPage2.Controls.Add(this.start_automatic_mapping);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -971,59 +1066,212 @@
             this.tabPage2.Text = "RF Estimator";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // label25
+            // grating_center_y
             // 
-            this.label25.BackColor = System.Drawing.Color.Black;
-            this.label25.Location = new System.Drawing.Point(6, 338);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(657, 294);
-            this.label25.TabIndex = 3;
-            this.label25.Text = "label25";
+            this.grating_center_y.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.grating_center_y.Location = new System.Drawing.Point(641, 62);
+            this.grating_center_y.Name = "grating_center_y";
+            this.grating_center_y.Size = new System.Drawing.Size(72, 20);
+            this.grating_center_y.TabIndex = 7;
+            this.grating_center_y.Text = "0";
             // 
-            // label24
+            // grating_center_x
             // 
-            this.label24.BackColor = System.Drawing.Color.Black;
-            this.label24.Location = new System.Drawing.Point(6, 3);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(657, 322);
-            this.label24.TabIndex = 2;
-            this.label24.Text = "label24";
+            this.grating_center_x.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.grating_center_x.Location = new System.Drawing.Point(641, 39);
+            this.grating_center_x.Name = "grating_center_x";
+            this.grating_center_x.Size = new System.Drawing.Size(72, 20);
+            this.grating_center_x.TabIndex = 6;
+            this.grating_center_x.Text = "0";
             // 
-            // button3
+            // label28
             // 
-            this.button3.Location = new System.Drawing.Point(752, 546);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(153, 40);
-            this.button3.TabIndex = 1;
-            this.button3.Text = "Start manual mapping";
-            this.button3.UseVisualStyleBackColor = true;
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(536, 62);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(82, 13);
+            this.label28.TabIndex = 5;
+            this.label28.Text = "Grating center y";
             // 
-            // button2
+            // label26
             // 
-            this.button2.Location = new System.Drawing.Point(752, 592);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(153, 40);
-            this.button2.TabIndex = 0;
-            this.button2.Text = "Start automatic mapping";
-            this.button2.UseVisualStyleBackColor = true;
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(536, 39);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(82, 13);
+            this.label26.TabIndex = 4;
+            this.label26.Text = "Grating center x";
+            // 
+            // rf_spike_plot
+            // 
+            this.rf_spike_plot.BackColor = System.Drawing.Color.Black;
+            this.rf_spike_plot.Location = new System.Drawing.Point(6, 159);
+            this.rf_spike_plot.Name = "rf_spike_plot";
+            this.rf_spike_plot.Size = new System.Drawing.Size(512, 144);
+            this.rf_spike_plot.TabIndex = 3;
+            this.rf_spike_plot.Text = "label25";
+            // 
+            // rf_grating_position
+            // 
+            this.rf_grating_position.BackColor = System.Drawing.Color.Black;
+            this.rf_grating_position.Location = new System.Drawing.Point(6, 3);
+            this.rf_grating_position.Name = "rf_grating_position";
+            this.rf_grating_position.Size = new System.Drawing.Size(512, 144);
+            this.rf_grating_position.TabIndex = 2;
+            this.rf_grating_position.Text = "label24";
+            this.rf_grating_position.Paint += new System.Windows.Forms.PaintEventHandler(this.rf_grating_position_Paint);
+            this.rf_grating_position.MouseMove += new System.Windows.Forms.MouseEventHandler(this.rf_grating_position_MouseMove);
+            // 
+            // start_manual_mapping
+            // 
+            this.start_manual_mapping.Location = new System.Drawing.Point(675, 209);
+            this.start_manual_mapping.Name = "start_manual_mapping";
+            this.start_manual_mapping.Size = new System.Drawing.Size(138, 40);
+            this.start_manual_mapping.TabIndex = 1;
+            this.start_manual_mapping.Tag = "0";
+            this.start_manual_mapping.Text = "Start manual mapping";
+            this.start_manual_mapping.UseVisualStyleBackColor = true;
+            this.start_manual_mapping.Click += new System.EventHandler(this.start_manual_mapping_Click);
+            // 
+            // start_automatic_mapping
+            // 
+            this.start_automatic_mapping.Location = new System.Drawing.Point(675, 263);
+            this.start_automatic_mapping.Name = "start_automatic_mapping";
+            this.start_automatic_mapping.Size = new System.Drawing.Size(138, 40);
+            this.start_automatic_mapping.TabIndex = 0;
+            this.start_automatic_mapping.Text = "Start automatic mapping";
+            this.start_automatic_mapping.UseVisualStyleBackColor = true;
             // 
             // ofDialog
             // 
             this.ofDialog.FileName = "openFileDialog1";
+            // 
+            // chart1
+            // 
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
+            this.chart1.Location = new System.Drawing.Point(0, 0);
+            this.chart1.Name = "chart1";
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
+            this.chart1.Size = new System.Drawing.Size(300, 300);
+            this.chart1.TabIndex = 0;
+            this.chart1.Text = "chart1";
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.pSTHToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(937, 24);
+            this.menuStrip1.TabIndex = 2;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // pSTHToolStripMenuItem
+            // 
+            this.pSTHToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showToolStripMenuItem});
+            this.pSTHToolStripMenuItem.Name = "pSTHToolStripMenuItem";
+            this.pSTHToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.pSTHToolStripMenuItem.Text = "&PSTH";
+            // 
+            // showToolStripMenuItem
+            // 
+            this.showToolStripMenuItem.Name = "showToolStripMenuItem";
+            this.showToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.showToolStripMenuItem.Text = "&Show";
+            this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
+            // 
+            // netcom_server_port
+            // 
+            this.netcom_server_port.Location = new System.Drawing.Point(182, 22);
+            this.netcom_server_port.Name = "netcom_server_port";
+            this.netcom_server_port.Size = new System.Drawing.Size(99, 20);
+            this.netcom_server_port.TabIndex = 13;
+            this.netcom_server_port.Text = "6789";
+            // 
+            // netcom_server_ip
+            // 
+            this.netcom_server_ip.Location = new System.Drawing.Point(33, 22);
+            this.netcom_server_ip.Name = "netcom_server_ip";
+            this.netcom_server_ip.Size = new System.Drawing.Size(99, 20);
+            this.netcom_server_ip.TabIndex = 15;
+            this.netcom_server_ip.Text = "169.254.209.8";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(150, 25);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(26, 13);
+            this.label24.TabIndex = 14;
+            this.label24.Text = "Port";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(10, 25);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(17, 13);
+            this.label25.TabIndex = 12;
+            this.label25.Text = "IP";
+            // 
+            // netcom_server_connect
+            // 
+            this.netcom_server_connect.Location = new System.Drawing.Point(349, 19);
+            this.netcom_server_connect.Name = "netcom_server_connect";
+            this.netcom_server_connect.Size = new System.Drawing.Size(90, 24);
+            this.netcom_server_connect.TabIndex = 12;
+            this.netcom_server_connect.Tag = "0";
+            this.netcom_server_connect.Text = "Connect";
+            this.netcom_server_connect.UseVisualStyleBackColor = true;
+            // 
+            // netcom_command
+            // 
+            this.netcom_command.Location = new System.Drawing.Point(33, 99);
+            this.netcom_command.Name = "netcom_command";
+            this.netcom_command.Size = new System.Drawing.Size(248, 20);
+            this.netcom_command.TabIndex = 16;
+            // 
+            // netcom_send_command
+            // 
+            this.netcom_send_command.Location = new System.Drawing.Point(349, 99);
+            this.netcom_send_command.Name = "netcom_send_command";
+            this.netcom_send_command.Size = new System.Drawing.Size(90, 24);
+            this.netcom_send_command.TabIndex = 17;
+            this.netcom_send_command.Tag = "0";
+            this.netcom_send_command.Text = "Connect";
+            this.netcom_send_command.UseVisualStyleBackColor = true;
             // 
             // main_form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(937, 688);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.overview_tab);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "main_form";
             this.Text = "vrClient";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.tabControl1.ResumeLayout(false);
+            this.overview_tab.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
@@ -1047,7 +1295,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.right_stimulus)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.left_stimulus)).EndInit();
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -1059,10 +1312,7 @@
         private System.Windows.Forms.Button connect_button;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox command_text;
-        private System.Windows.Forms.Button send_command;
-        private System.Windows.Forms.Label incoming_text;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl overview_tab;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Label label23;
@@ -1131,16 +1381,38 @@
         private System.Windows.Forms.TextBox trial_name;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Label label26;
-        private System.Windows.Forms.ListBox config_files;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button load_config_xml;
         private System.Windows.Forms.GroupBox groupBox7;
-        private System.Windows.Forms.Button upload_configuration;
+        private System.Windows.Forms.Button generate_experiment_xml;
+        private System.Windows.Forms.Label rf_spike_plot;
+        private System.Windows.Forms.Label rf_grating_position;
+        private System.Windows.Forms.Button start_manual_mapping;
+        private System.Windows.Forms.Button start_automatic_mapping;
+        private System.Windows.Forms.Label left_stimulus_name;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Label right_stimulus_name;
+        private System.Windows.Forms.Label label29;
+        private System.Windows.Forms.Button run_experiment;
+        private System.Windows.Forms.Button load_custom_xml;
+        private System.Windows.Forms.ListBox matlab_server_messages;
+        private System.Windows.Forms.ListBox cheetah_server_messages;
+        private System.Windows.Forms.Button disconnect_button;
+        private System.Windows.Forms.Label grating_center_y;
+        private System.Windows.Forms.Label grating_center_x;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pSTHToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
+        private System.Windows.Forms.TextBox netcom_server_port;
+        private System.Windows.Forms.Button netcom_server_connect;
+        private System.Windows.Forms.TextBox netcom_server_ip;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button netcom_send_command;
+        private System.Windows.Forms.TextBox netcom_command;
     }
 }
 

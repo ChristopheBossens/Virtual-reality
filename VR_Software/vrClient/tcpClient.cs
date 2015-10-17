@@ -13,19 +13,29 @@ namespace vrClient
 {
     enum ClientState
     {
-        InitiateCommand,
-        GetConfig,
-        SendConfig,
-        SendImage,
-        ExperimentRunning
+        Disconnected,
+        Idle,
+        AwaitLoadConfirmation,
+        ReadyForExperiment,
+        ExperimentRunning,
+
+        StartMapping,
+        StopMapping,
+        ReadyForCoordinate,
+        ProcessingCoordinate
     };
 
     class ClientConnection
     {
-        byte getConfigByte = 0x01;
-        byte setConfigByte = 0x02;
-        byte sendImageByte = 0x03;
-        byte byteLF = 0x0a;
+        const byte getConfigByte = 0x01;
+        const byte setConfigByte = 0x02;
+        const byte sendImageByte = 0x03;
+        const byte byteLF = 0x0a;
+        const byte loadExperimentByte = 0x05;
+        const byte runExperimentByte = 0x06;
+        const byte experimentUpdateByte = 0x07;
+        const byte disconnectByte = 0x08;
+        const byte runRFMapping = 0x09;
 
         TcpClient client;
         BinaryWriter binaryWriter;
@@ -37,135 +47,194 @@ namespace vrClient
         object stateObject;
         bool clientConnected;
 
+        ListboxMessenger messenger;
+
+        int lastX, lastY, lastOr, lastFreq;
+
         public ClientConnection(string ip, int port)
         {
+            Connect(ip, port);
+        }
+        ~ClientConnection()
+        {
+            if (client != null & clientConnected)
+                client.Close();
+        }
+
+        // Connection and configuration functions
+        public void Connect(string ip, int port)
+        {
+            clientConnected = true;
             try
             {
-                client = new TcpClient();
-                client.SendBufferSize = 81536;
-                client.Connect(ip, port);
+                
+                byte[] localAddressBytes = new byte[] { 169, 254, 152, 204 };
+                byte[] remoteAddressBytes = new byte[] { 169, 254, 152, 203 };
+
+                //IPAddress localAddress = Dns.GetHostAddresses("127.0.0.1");
+                //IPAddress remoteAddress = IPAddress.Parse(ip);
+               
+                IPAddress localAddress = new IPAddress(localAddressBytes);
+                IPAddress remoteAddress = new IPAddress(remoteAddressBytes);
+
+                IPEndPoint localEndPoint = new IPEndPoint(localAddress, 6788);
+                IPEndPoint remoteEndPoint = new IPEndPoint(remoteAddress, port);
+
+                client = new TcpClient(localEndPoint);
+                client.Client.Connect(remoteEndPoint);
+                client.SendBufferSize = 1024;
+
                 binaryWriter = new BinaryWriter(client.GetStream());
                 binaryReader = new BinaryReader(client.GetStream());
 
-                bufferSize = 1024*4;
+                bufferSize = 1024 * 4;
                 inputBuffer = new byte[bufferSize];
-                //client.Client.BeginReceive(inputBuffer,0, 1, SocketFlags.None,DataReceived,stateObject);
-
-                clientConnected = true;
-
+                outputBuffer = new byte[1024];
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message);
                 clientConnected = false;
+
             }
         }
-
-        public void RequestConfigFiles(out int nCount, out string[] configFiles)
+        public void Disconnect()
         {
-            // Send configuration request byte
-            binaryWriter.Write(getConfigByte);
-            binaryWriter.Write(byteLF);
-            clientState = ClientState.GetConfig;
-            binaryWriter.Flush();
-
-            // Fetch incoming configuration files
-            nCount = 0;
-            configFiles = new string[0];
-            client.Client.Receive(inputBuffer, 0, 1, SocketFlags.None);
-            if (inputBuffer[0] == 1)
+            if (client.Connected && clientState == ClientState.Idle)
             {
-                client.Client.Receive(inputBuffer, 2, SocketFlags.None);
+                binaryWriter.Write(disconnectByte);
+                binaryWriter.Write(byteLF);
+                binaryWriter.Flush();
 
-                nCount = BitConverter.ToInt16(inputBuffer, 0);
-                configFiles = new string[nCount];
-
-                for (int configIndex = 0; configIndex < nCount; ++configIndex)
-                {
-                    client.Client.Receive(inputBuffer, 2, SocketFlags.None);
-                    int nChars = BitConverter.ToInt16(inputBuffer, 0);
-                    char[] charArray = new char[nChars];
-                    charArray = binaryReader.ReadChars(nChars);
-                    configFiles[configIndex] = new string(charArray);
-                }
+                client.Close();
+                clientState = ClientState.Disconnected;
             }
         }
-
-        public void UploadConfigFile(string filename)
+        public void SetMessenger(ListboxMessenger lb) {   messenger = lb;}
+        public bool IsConnected() { return clientConnected; }
+        
+        
+        // Send signal to matlab client for loading a selected experiment configuration file   
+        public bool LoadExperimentConfig(string filename)
         {
-            // Send signal byte
-            binaryWriter.Write(setConfigByte);
+            binaryWriter.Write(loadExperimentByte);
             binaryWriter.Write(byteLF);
-            clientState = ClientState.SendConfig;
+            clientState = ClientState.AwaitLoadConfirmation;
+
+            binaryWriter.Write(Convert.ToInt16(filename.Length));
+            binaryWriter.Write(filename.ToCharArray());
             binaryWriter.Flush();
 
-            using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read))
-            {
-                // Send filename length and filename
-                string file = Path.GetFileNameWithoutExtension(filename);
-                binaryWriter.Write(Convert.ToInt16(file.Length));
-                binaryWriter.Write(file.ToCharArray());
+            client.Client.Receive(inputBuffer, 2, SocketFlags.None);
+            clientState = ClientState.Idle;
+            if (inputBuffer[0] == loadExperimentByte && inputBuffer[1] == 0x02)
+                return true;
+            else
+                return false;
+        }
+        public void RunExperiment(string filename)
+        {
+            binaryWriter.Write(runExperimentByte);
+            binaryWriter.Write(byteLF);
+            clientState = ClientState.ExperimentRunning;
 
-                // Send file length and file
-                outputBuffer = new byte[fileStream.Length];
-                fileStream.Read(outputBuffer,0,(int)fileStream.Length);
-                binaryWriter.Write(Convert.ToInt16(fileStream.Length));
-                binaryWriter.Write(outputBuffer, 0, outputBuffer.Length);
+            binaryWriter.Write(Convert.ToInt16(filename.Length));
+            binaryWriter.Write(filename.ToCharArray());
+            binaryWriter.Flush();
+
+            // During an experiment the client is put into asynchronous mode for receiving updates
+            client.Client.BeginReceive(inputBuffer, 0, 2, SocketFlags.None, DataReceived, stateObject);
+        }
+
+
+        // Functions for controlling receptive field mapping
+        public void StartMapping()
+        {
+            binaryWriter.Write(runRFMapping);
+            binaryWriter.Write(byteLF);
+
+            clientState = ClientState.ProcessingCoordinate;
+            client.Client.BeginReceive(inputBuffer, 0, 2, SocketFlags.None, CoordinateReceived, stateObject);
+        }
+        public void StopMapping()
+        {
+            clientState = ClientState.StopMapping;
+        }
+        public void UpdateRFData(int x, int y, int orientation, int frequency)
+        {
+            if (clientState != ClientState.StopMapping)
+            {
+                Byte[] xByte = BitConverter.GetBytes(x);
+                Byte[] yByte = BitConverter.GetBytes(y);
+                Byte[] orByte = BitConverter.GetBytes(orientation);
+                Byte[] freqByte = BitConverter.GetBytes(frequency);
+
+                Buffer.BlockCopy(xByte, 0, outputBuffer, 0, 2);
+                Buffer.BlockCopy(yByte, 0, outputBuffer, 2, 2);
+                Buffer.BlockCopy(orByte, 0, outputBuffer, 4, 2);
+                Buffer.BlockCopy(freqByte, 0, outputBuffer, 6, 2);
+             }
+        }       
+        private void SendRFData()
+        {
+            if (clientState == ClientState.ReadyForCoordinate)
+            {
+                clientState = ClientState.ProcessingCoordinate;
+                client.Client.Send(outputBuffer, 8, SocketFlags.None);
+                client.Client.BeginReceive(inputBuffer, 0, 1, SocketFlags.None, CoordinateReceived, stateObject);
+            }
+
+            if (clientState == ClientState.StopMapping)
+            {
+                lastX = -1;
+                lastY = -1;
+                binaryWriter.Write(Convert.ToInt16(lastX));
+                binaryWriter.Write(Convert.ToInt16(lastY));
+                binaryWriter.Write(Convert.ToInt16(lastOr));
+                binaryWriter.Write(Convert.ToInt16(lastFreq));
+                binaryWriter.Flush();
+
+                client.Client.BeginReceive(inputBuffer, 0, 1, SocketFlags.None, CoordinateReceived, stateObject);
+            }
+        }
+        public void SendStopSignal()
+        {
+            if (clientState == ClientState.StopMapping)
+            {
+                lastX = -1;
+                lastY = -1;
+                binaryWriter.Write(Convert.ToInt16(lastX));
+                binaryWriter.Write(Convert.ToInt16(lastY));
+                binaryWriter.Write(Convert.ToInt16(lastOr));
+                binaryWriter.Write(Convert.ToInt16(lastFreq));
                 binaryWriter.Flush();
             }
-            
         }
 
-        public void SendConfigImage(string config, string[] imageLocations)
+        // Asynchronous callback functions
+        public void CoordinateReceived(IAsyncResult ia)
         {
-            // Send signal byte
-            binaryWriter.Write(sendImageByte);
-            binaryWriter.Write(byteLF);
-            clientState = ClientState.SendImage;
-            binaryWriter.Flush();
+            int dataRead = client.Client.EndReceive(ia);
+            if (dataRead == 0)
+                return;
 
-            // Send config name length and config name
-            binaryWriter.Write(Convert.ToInt16(config.Length));
-            binaryWriter.Write(config.ToCharArray());
-
-            // Send number of images
-            binaryWriter.Write(Convert.ToInt16(imageLocations.Length));
-
-            foreach (string imageLocation in imageLocations)
+            if (clientState == ClientState.ProcessingCoordinate)
             {
-                using(FileStream fileStream = new FileStream(imageLocation, FileMode.Open,FileAccess.Read))
+                if (inputBuffer[0] == 1)
                 {
-                    // send image name length and image name
-                    string imageName = Path.GetFileName(imageLocation);
-                    binaryWriter.Write(Convert.ToInt16(imageName.Length));
-                    binaryWriter.Write(imageName.ToCharArray());
-
-                    // send image length and image
-                    outputBuffer = new byte[fileStream.Length];
-                    fileStream.Read(outputBuffer, 0, (int)fileStream.Length);
-                    binaryWriter.Write(Convert.ToInt32(fileStream.Length));
-                    binaryWriter.Write(outputBuffer, 0, outputBuffer.Length);
-                    binaryWriter.Flush();
+                    clientState = ClientState.ReadyForCoordinate;
+                    SendRFData();
+                    return;
                 }
             }
-        }
 
-        public void SendImage(Image im, int index)
-        {
-            if (clientConnected)
+            if (clientState == ClientState.StopMapping)
             {
-                Bitmap bmp = new Bitmap(im);
-                MemoryStream ms = new MemoryStream();
-
-                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-
-                outputBuffer = ms.ToArray();
-
-                binaryWriter.Write(outputBuffer, 0, outputBuffer.Length);
-                binaryWriter.Flush();
+                if (inputBuffer[0] == 1)
+                    SendStopSignal();
+                clientState = ClientState.Idle;
             }
         }
-
         public void DataReceived(IAsyncResult ia)
         {
             int dataRead = client.Client.EndReceive(ia);
@@ -173,27 +242,39 @@ namespace vrClient
             if (dataRead == 0)
                 return;
 
-            string[] configFiles;
-            // Get list of available configurations
-            if (inputBuffer[0] == 0x0a)
+
+            switch (clientState)
             {
-                client.Client.Receive(inputBuffer, 2, SocketFlags.None);
+                case ClientState.AwaitLoadConfirmation:
+                    if (inputBuffer[0] == loadExperimentByte)
+                    {
+                        if (inputBuffer[1] == 0x02)
+                        {
+                            clientState = ClientState.ReadyForExperiment;
+                        }
+                    }
+                    break;
 
-                int nCount = BitConverter.ToInt16(inputBuffer, 0);
-                configFiles = new string[nCount];
+                case ClientState.ExperimentRunning:
+                    if (inputBuffer[0] == experimentUpdateByte)
+                    {
+                        switch (inputBuffer[1])
+                        {
+                            case 0x01: // Experiment has ended
+                                clientState = ClientState.Idle;
+                                messenger.AddMessage("Experiment finished!");
+                                return;
+                            case 0x02: // Receive trial information
+                                binaryReader.Read(inputBuffer, 2, 4);
+                                int trialIndex = BitConverter.ToInt16(inputBuffer, 2);
+                                int totalTrials = BitConverter.ToInt16(inputBuffer, 4);
+                                messenger.AddMessage("Presenting trial: " + trialIndex.ToString() + " / " + totalTrials.ToString());
+                                break;
 
-                for (int configIndex = 0; configIndex < nCount;++configIndex)
-                {
-                    client.Client.Receive(inputBuffer, 2, SocketFlags.None);
-                    int nChars = BitConverter.ToInt16(inputBuffer, 0);
-                    char[] charArray = new char[nChars];
-                    charArray = binaryReader.ReadChars(nChars);
-                    configFiles[configIndex] = new string(charArray);
-                }
-
+                        }
+                    }
+                    break;
             }
-            
-            byte[] byteData = ia.AsyncState as byte[];
             client.Client.BeginReceive(inputBuffer, 0, bufferSize, SocketFlags.None, DataReceived, stateObject);
         }
 

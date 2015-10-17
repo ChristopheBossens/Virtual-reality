@@ -22,6 +22,9 @@ classdef MotionSensor < handle
         stopReadingByte  = 6;
         getDataByte = 7;
         initResponse = 1;
+        
+        xScaling = 0;
+        yScaling = 0;
     end
     
     methods
@@ -58,6 +61,7 @@ classdef MotionSensor < handle
                 obj.StopReading();
             end
             fclose(obj.serialPort);
+            display('Disconnected from motion sensor');
         end
         
         % Reading and setting sensor parameters
@@ -95,6 +99,9 @@ classdef MotionSensor < handle
             if (obj.sensorInit == 1 && obj.sensorReading == 0)
                 params = [4 params];
                 fwrite(obj.serialPort, params, 'int8');
+                
+                obj.xScaling = 2.54/(params(1)*200);
+                obj.yScaling = 2.54/(params(2)*200);
                 display('Sensor parameters are set.');
             end
         end
@@ -106,6 +113,7 @@ classdef MotionSensor < handle
             if (obj.sensorInit == 1 && obj.sensorReading == 0)
                 fwrite(obj.serialPort,obj.startReadingByte,'int8');
                 obj.sensorReading = 1;
+                display('Started reading from motion sensor');
             end
         end
         
@@ -115,6 +123,7 @@ classdef MotionSensor < handle
             if (obj.sensorInit == 1 && obj.sensorReading == 1)
                 fwrite(obj.serialPort, obj.startReadingByte, 'int8');
                 obj.sensorReading = 0;
+                display('Stopped reading from motion sensor');
             end
         end
         
@@ -128,8 +137,8 @@ classdef MotionSensor < handle
             else
                 data =[0 0];
             end
-            x = data(1);
-            y = data(2);
+            x = data(1)*obj.xScaling;
+            y = data(2)*obj.yScaling;
         end
     end   
 end
