@@ -51,7 +51,7 @@ classdef ExperimentManager < handle
         function InitScreen(obj, whichScreen)
             % Initialize PTB screens, screen number can be given as an
             % extra argument
-            display(sprintf('\nInitializing screens...'));
+            display('Initializing screens...');
 
             try
                 [obj.fullscreenWindow, obj.fullscreenRect] = PsychImaging('OpenWindow',whichScreen,[],[],[],4);
@@ -64,28 +64,30 @@ classdef ExperimentManager < handle
         end
         
         function InitMotionSensor(obj, portname, LD, CPI)
-            % Initialize motion sensor
-            % Needs the port to which the sensor is connected and sensor
-            % parameters
-            display(sprintf('\nInitializing motion sensor...'));
-            
+            % Initi
+            display('Initializing motion sensor...');
+            obj.motionSensorPort = portname;
+            obj.motionSensor.LD = LD;
+            obj.motionSensor.CPI = CPI;
             
             obj.motionSensor = MotionSensor(obj.motionSensorPort);
             obj.motionSensor.SetParams([obj.CPI obj.CPI obj.LD obj.LD]);
             
             CPI = obj.motionSensor.GetCPI();
             LD = obj.motionSensor.GetLD();
-            if numel(LD) == 2
+            if numel(LD) < 2
+                display('No valid parameters found');
+            else
                 display('Using Motion sensor parameters:');
                 display(['LD: ' num2str(LD(1)) ', ' num2str(LD(2))]);
                 display(['DPI: ' num2str(CPI(1)) ', ' num2str(CPI(2))]);
             end
         end           
         function InitRewardDelivery(obj, boardNumber, rewardLine)
-            display(sprintf('\nInitializing reward delivery...'));
             obj.rewardBoardNumber = boardNumber;
             obj.rewardLines = rewardLine-1;
             obj.rewardDelivery = RewardDelivery(obj.rewardBoardNumber,obj.rewardLines);
+            display('Reward delivery relay initialized');
         end
         
         function [screenID, screenRect] = GetScreenInformation(obj)
@@ -106,7 +108,7 @@ classdef ExperimentManager < handle
         function status = LoadXML(obj,file)
             % Loads an experimental xml file
             % A check is conducted to make sure that all stimuli mentioned
-            % across trials are also present in the stimulus list
+            % in across trials are also present in the stimulus list
             status = 1;
             try
                 [obj.imageData, obj.trialData] = xmlParser(file);

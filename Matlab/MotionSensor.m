@@ -48,9 +48,9 @@ classdef MotionSensor < handle
                 end
                 display('Connected to sensor.');
             catch exc
-                display('Warning, could not connect to sensor');
+                display('No connection with motion sensor');
                 display('Subsequent calls to readsensor will return zero values');
-                display(exc.message);
+                display(['Error message: ' exc.message]);
             end
         end 
         function delete(obj)
