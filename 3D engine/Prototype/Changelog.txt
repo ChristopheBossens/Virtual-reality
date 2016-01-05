@@ -2,5 +2,9 @@
 Completed offscreen drawing to a texture, the content of each monitor is then drawn using a quad with texture coordinates that sample the left and right part of the offscreen texture
 Added correct model and view matrices
 
+01/05/2016
+Updated the square class to make it easier place square walls in the environment. It could still be improved by implementing a system that works within a local frame of reference
+so that the order of commands does not matter anymore
+
 To do:
-hard code a simple virtual environment
+Implement collision testing on walls
