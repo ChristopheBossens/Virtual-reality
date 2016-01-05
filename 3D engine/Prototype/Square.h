@@ -12,6 +12,10 @@ namespace Shapes
 		GLuint EBO;
 		GLuint VAO;
 
+		float xPosition, yPosition, zPosition;
+		float xRotation, yRotation, zRotation;
+		float xScaling, yScaling;
+
 	public:
 		Square();
 		~Square();
