@@ -1,0 +1,6 @@
+01/04/2016
+Completed offscreen drawing to a texture, the content of each monitor is then drawn using a quad with texture coordinates that sample the left and right part of the offscreen texture
+Added correct model and view matrices
+
+To do:
+hard code a simple virtual environment
