@@ -8,6 +8,7 @@ classdef RewardDelivery < handle
         boardNumber = 0;
         relayChannels = 0;
         boardHandle = 0;
+        isConnected = 0;
     end
     
     methods
@@ -19,24 +20,33 @@ classdef RewardDelivery < handle
                 obj.boardHandle = digitalio('mcc',boardNumber);
                 addline(obj.boardHandle,relayChannels,'out');
                 display('Connected to relay board');
+                obj.isConnected = 1;
             catch err
-                display('Could not connect to measurement computing board: ');
-                display(err.message);
+                display('Could not connect to relay board. No rewards will be delivered.');
+                display(['Error message: ' err.message]);
+                obj.isConnected = 0;
             end
         end
+        
         function delete(obj)
-            obj.StopReward();
-            delete(obj.boardHandle);
-            display('USB-ERB08 removed from data acquisition engine');
+            if (obj.isConnected == 1)
+                obj.StopReward();
+                delete(obj.boardHandle);
+                display('Disconnected from relay board');
+            end
         end
 
         % Handles reward delivery
         function StartReward(obj)
-            putvalue(obj.boardHandle, ones(1,length(obj.relayChannels)));
+            if (obj.isConnected == 1)
+                putvalue(obj.boardHandle, ones(1,length(obj.relayChannels)));
+            end
         end
         
         function StopReward(obj)
-            putvalue(obj.boardHandle, zeros(1,length(obj.relayChannels)));
+            if (obj.isConnected == 1)
+                putvalue(obj.boardHandle, zeros(1,length(obj.relayChannels)));
+            end
         end
     end
     
