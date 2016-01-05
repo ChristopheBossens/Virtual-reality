@@ -98,7 +98,7 @@ int main()
 	GLuint texture = textureLoader.LoadRGB("Images\\container.jpg");
 
 	// Define camera component vectors
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6.0f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	float yaw = -90.0f;
@@ -127,7 +127,27 @@ int main()
 
 	model1 = glm::translate(idm, glm::vec3(0.0f, 0.0f, -3.0f));
 
+	square.SetPosition(-0.5f, 0.0f, 0.0f);
+	square.SetRotation(0.0f, 0.0f, 0.0f);
+	
+	leftWall.SetScaling(2.0f, 1.0f);
+	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
+	leftWall.SetPosition(-2.0f, 0.0f, 0.0f);
+	
+	rightWall.SetScaling(2.0f, 1.0f);
+	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
+	rightWall.SetPosition(2.0f, 0.0f, 0.0f);
+	
+	floorSquare.SetColor(1.0f, 1.0f, 0.5f);
+	floorSquare.SetScaling(2.0f, 2.0f);
+	floorSquare.SetRotation(-90.0f, 0.0f, 0.0f);
+	floorSquare.SetPosition(0.0f, -1.0f, 0.0f);
+
+	/*	
 	leftWallModel = glm::translate(idm, glm::vec3(-0.5f, -0.0f, 0.0f));
+	leftWall.SetPosition(-0.5f, 0.0f, 0.0f);
+	leftWall.SetScaling(1.0f, 3.0f);
+
 	leftWallModel = glm::rotate(leftWallModel, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	rightWallModel = glm::translate(idm, glm::vec3(0.5f, 0.0f, 0.0f));
@@ -135,7 +155,7 @@ int main()
 
 	floorModel = glm::translate(idm, glm::vec3(0.0f, -1.0f, -1.0f));
 	floorModel = glm::rotate(floorModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	
+	*/
 	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 	glEnable(GL_DEPTH_TEST);
 
@@ -240,16 +260,17 @@ int main()
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 			glBindTexture(GL_TEXTURE_2D, texture);
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model1));
-				square.Draw();
 
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(leftWallModel));
+				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
+				//square.Draw();
+
+				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(leftWallModel));
 				leftWall.Draw();
 
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(rightWallModel));
+				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(rightWallModel));
 				rightWall.Draw();
 
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(floorModel));
+				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(floorModel));
 				floorSquare.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, 0);
