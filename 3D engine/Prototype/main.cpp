@@ -61,6 +61,7 @@ void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {}
 
+
 int main()
 {
 	InitGlfw initGlfw;
@@ -111,7 +112,7 @@ int main()
 	glm::mat4 view;
 	glm::mat4 proj1;
 	glm::mat4 idm  = glm::mat4();
-	
+
 	// Hard-coded virtual environment
 	Square backWall;
 	Square leftWall;
@@ -119,7 +120,6 @@ int main()
 	Square floorSquare;
 	Square frontWall;
 	Square rewardZone;
-
 	float corridorDepth = 10.0f;
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
@@ -133,8 +133,8 @@ int main()
 
 	backWall.SetColor(0.5f, 0.5f, 0.9f);
 	backWall.SetScaling(corridorWidth, wallHeight);
-	backWall.SetPosition(0.0f, wallHeight/2, -corridorDepth);
-	
+	backWall.SetPosition(0.0f, wallHeight / 2, -corridorDepth);
+
 	frontWall.SetColor(0.5f, 0.5f, 0.9f);
 	frontWall.SetScaling(corridorWidth, wallHeight);
 	frontWall.SetPosition(0.0f, wallHeight / 2.0f, corridorDepth);
@@ -142,17 +142,17 @@ int main()
 	leftWall.SetColor(0.5f, 0.9f, 0.5f);
 	leftWall.SetScaling(corridorDepth, wallHeight);
 	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
-	leftWall.SetPosition(-corridorWidth, wallHeight/2, 0.0f);
-	
+	leftWall.SetPosition(-corridorWidth, wallHeight / 2, 0.0f);
+
 	rightWall.SetColor(0.5f, 0.9f, 0.5f);
 	rightWall.SetScaling(corridorDepth, wallHeight);
 	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
-	rightWall.SetPosition(corridorWidth,wallHeight/2, 0.0f);
-	
+	rightWall.SetPosition(corridorWidth, wallHeight / 2, 0.0f);
+
 	floorSquare.SetColor(0.1f, 0.1f, 0.1f);
 	floorSquare.SetScaling(corridorWidth, corridorDepth);
 	floorSquare.SetRotation(-90.0f, 0.0f, 0.0f);
-	floorSquare.SetPosition(0.0f, -wallHeight/2.0f, 0.0f);
+	floorSquare.SetPosition(0.0f, -wallHeight / 2.0f, 0.0f);
 
 	rewardZone.SetColor(0.2f, 0.9f, 0.2f);
 	rewardZone.SetScaling(corridorWidth, rewardZoneDepth);

@@ -40,6 +40,8 @@ namespace Core
 		void InitContext();
 		void InitExtensions();
 		void SetWindowInfo();
+		void SetMotionReader();
+
 		void GetMonitors();
 	public:
 		InitGlfw();
