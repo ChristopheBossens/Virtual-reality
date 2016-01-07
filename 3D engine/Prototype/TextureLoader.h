@@ -16,5 +16,6 @@ namespace Core
 		~TextureLoader();
 
 		GLuint LoadRGB(const char* filename);
+		GLuint LoadBlank();
 	};
 }

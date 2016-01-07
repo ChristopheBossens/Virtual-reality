@@ -26,8 +26,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 {
 	if (action == GLFW_RELEASE)
 	{
-		std::cout << "Key release event detected: " << key << "," << scancode << endl;
-
 		if (key == GLFW_KEY_ESCAPE)
 			glfwSetWindowShouldClose(window, 1);
 		if (key == GLFW_KEY_F)
@@ -47,17 +45,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (action == GLFW_PRESS)
 	{
 		if (key == GLFW_KEY_UP)
-			yVelocity = 0.03f;
+			yVelocity = 0.05f;
 		if (key == GLFW_KEY_DOWN)
-			yVelocity = -0.03f;
+			yVelocity = -0.05f;
 		if (key == GLFW_KEY_LEFT)
-			xVelocity = 0.03f;
+			xVelocity = 0.05f;
 		if (key == GLFW_KEY_RIGHT)
-			xVelocity = -0.03f;
+			xVelocity = -0.05f;
 	}
 }
-
-
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	
@@ -87,25 +83,24 @@ int main()
 	textShaderProgram = shaderLoader.CreateProgram("Shaders\\text_vs.glsl", "Shaders\\text_fs.glsl");
 	simpleShaderProgram = shaderLoader.CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
 	
-	// Hard-coded virtual environment
-	Square square;
-	Square leftWall;
-	Square rightWall;
-	Square floorSquare;
 
 	// Load texture
-	// TO DO: create texture manager
 	GLuint texture = textureLoader.LoadRGB("Images\\container.jpg");
+	GLuint blankTexture = textureLoader.LoadBlank();
+	cout << "Blank texture status: " << blankTexture << endl;
 
 	// Define camera component vectors
+	float wallDistanceMargin = 0.2f;
+	float currentX;
+	float currentZ;
+
 	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6.0f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	float yaw = -90.0f;
 	glm::vec3 front(cos(glm::radians(yaw)), 0.0f, sin(glm::radians(yaw)));
 	
-	// Define model and view matrices for each object
-	// TO DO: clean up this code, add all view matrices to a single wallManager class
+	// Define model and view matrices and get shader locations
 	GLuint modelLocation = glGetUniformLocation(defaultShaderProgram, "model");
 	GLuint viewLocation = glGetUniformLocation(defaultShaderProgram, "view");
 	GLuint projectionLocation = glGetUniformLocation(defaultShaderProgram, "projection");
@@ -113,49 +108,50 @@ int main()
 	double currentTime = glfwGetTime();
 	double delta;
 
-
-	glm::mat4 model1;
-	
-	glm::mat4 leftWallModel;
-	glm::mat4 floorModel;
-	glm::mat4 rightWallModel;
-
 	glm::mat4 view;
 	glm::mat4 proj1;
 	glm::mat4 idm  = glm::mat4();
-
-
-	model1 = glm::translate(idm, glm::vec3(0.0f, 0.0f, -3.0f));
-
-	square.SetPosition(-0.5f, 0.0f, 0.0f);
-	square.SetRotation(0.0f, 0.0f, 0.0f);
 	
-	leftWall.SetScaling(2.0f, 1.0f);
+	// Hard-coded virtual environment
+	Square backWall;
+	Square leftWall;
+	Square rightWall;
+	Square floorSquare;
+	Square frontWall;
+	Square rewardZone;
+
+	float corridorDepth = 10.0f;
+	float corridorWidth = 3.0f;
+	float wallHeight = 2.0f;
+
+	backWall.SetColor(0.5f, 0.5f, 0.9f);
+	backWall.SetScaling(corridorWidth, wallHeight);
+	backWall.SetPosition(0.0f, wallHeight/2, -corridorDepth);
+	
+	frontWall.SetColor(0.5f, 0.5f, 0.9f);
+	frontWall.SetScaling(corridorWidth, wallHeight);
+	frontWall.SetPosition(0.0f, wallHeight / 2.0f, corridorDepth);
+
+	leftWall.SetColor(0.5f, 0.9f, 0.5f);
+	leftWall.SetScaling(corridorDepth, wallHeight);
 	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
-	leftWall.SetPosition(-2.0f, 0.0f, 0.0f);
+	leftWall.SetPosition(-corridorWidth, wallHeight/2, 0.0f);
 	
-	rightWall.SetScaling(2.0f, 1.0f);
+	rightWall.SetColor(0.5f, 0.9f, 0.5f);
+	rightWall.SetScaling(corridorDepth, wallHeight);
 	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
-	rightWall.SetPosition(2.0f, 0.0f, 0.0f);
+	rightWall.SetPosition(corridorWidth,wallHeight/2, 0.0f);
 	
-	floorSquare.SetColor(1.0f, 1.0f, 0.5f);
-	floorSquare.SetScaling(2.0f, 2.0f);
+	floorSquare.SetColor(0.1f, 0.1f, 0.1f);
+	floorSquare.SetScaling(corridorWidth, corridorDepth);
 	floorSquare.SetRotation(-90.0f, 0.0f, 0.0f);
-	floorSquare.SetPosition(0.0f, -1.0f, 0.0f);
+	floorSquare.SetPosition(0.0f, -wallHeight/2.0f, 0.0f);
 
-	/*	
-	leftWallModel = glm::translate(idm, glm::vec3(-0.5f, -0.0f, 0.0f));
-	leftWall.SetPosition(-0.5f, 0.0f, 0.0f);
-	leftWall.SetScaling(1.0f, 3.0f);
+	rewardZone.SetColor(0.2f, 0.9f, 0.2f);
+	rewardZone.SetScaling(corridorWidth, 1.0f);
+	rewardZone.SetRotation(-90.0f, 0.0f, 0.0f);
+	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, 0.0f);
 
-	leftWallModel = glm::rotate(leftWallModel, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	rightWallModel = glm::translate(idm, glm::vec3(0.5f, 0.0f, 0.0f));
-	rightWallModel = glm::rotate(rightWallModel, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	floorModel = glm::translate(idm, glm::vec3(0.0f, -1.0f, -1.0f));
-	floorModel = glm::rotate(floorModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	*/
 	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 	glEnable(GL_DEPTH_TEST);
 
@@ -227,7 +223,8 @@ int main()
 
 	
 	// Game loop
-	
+	int updateTick = 0;
+
 	while (!glfwWindowShouldClose(initGlfw.window))
 	{
 		// Get time
@@ -238,8 +235,17 @@ int main()
 		// Update view matrix
 		// sensor readings need to be plugged in here
 		front = glm::vec3(cos(glm::radians(yaw)), 0.0f, sin(glm::radians(yaw)));
+		currentX = cameraPos.x;
+		currentZ = cameraPos.z;
+
 		cameraPos += yVelocity * front;
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
+
+		if ( (cameraPos.x-wallDistanceMargin) < -corridorWidth | (cameraPos.x + wallDistanceMargin)> corridorWidth)
+			cameraPos.x = currentX;
+		if ((cameraPos.z-wallDistanceMargin) < -corridorDepth | (cameraPos.z + wallDistanceMargin) > corridorDepth)
+			cameraPos.z = currentZ;
+
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 
@@ -259,19 +265,16 @@ int main()
 			glUseProgram(defaultShaderProgram);
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
 			glBindTexture(GL_TEXTURE_2D, texture);
+			frontWall.Draw();
+			backWall.Draw();
+			leftWall.Draw();
+			rightWall.Draw();
+			floorSquare.Draw();
 
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
-				//square.Draw();
-
-				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(leftWallModel));
-				leftWall.Draw();
-
-				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(rightWallModel));
-				rightWall.Draw();
-
-				//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(floorModel));
-				floorSquare.Draw();
+			glBindTexture(GL_TEXTURE_2D, blankTexture);
+			rewardZone.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -308,8 +311,16 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glfwSwapBuffers(initGlfw.window2);
 
-		// Check events, collision detection happens here
+		// Check events
 		glfwPollEvents();
+
+		// Output information
+		++updateTick;
+		if (updateTick % 60 == 0)
+		{
+			cout << "Camera position: (" << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << ")" << endl;
+			updateTick = 0;
+		}
 	}
 	glfwTerminate();
 
