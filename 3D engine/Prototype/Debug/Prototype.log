@@ -1,10 +1,12 @@
-﻿Build started 5/01/2016 22:44:02.
+﻿Build started 1/7/2016 11:06:21 AM.
      1>Project "C:\Users\Christophe\Documents\GitHub\Virtual-reality\3D engine\Prototype\Prototype.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
      1>c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
          c:\dev\glfw-3.1.2\source\include\glfw\glfw3.h(85): note: see previous definition of 'APIENTRY'
+     1>c:\users\christophe\documents\github\virtual-reality\3d engine\prototype\main.cpp(244): warning C4554: '|': check operator precedence for possible error; use parentheses to clarify precedence
+     1>c:\users\christophe\documents\github\virtual-reality\3d engine\prototype\main.cpp(246): warning C4554: '|': check operator precedence for possible error; use parentheses to clarify precedence
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Christophe\Documents\GitHub\Virtual-reality\3D engine\Debug\Prototype.exe" /INCREMENTAL /NOLOGO freetype262d.lib SOIL.lib glew32d.lib opengl32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Christophe\Documents\GitHub\Virtual-reality\3D engine\Debug\Prototype.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Christophe\Documents\GitHub\Virtual-reality\3D engine\Debug\Prototype.lib" /MACHINE:X86 Debug\Init.obj
          Debug\main.obj
@@ -18,4 +20,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.87
+Time Elapsed 00:00:02.48
