@@ -94,7 +94,7 @@ int main()
 	float currentX;
 	float currentZ;
 
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6.0f);
+	glm::vec3 cameraPos = glm::vec3(0.0f, -0.5f, 6.0f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	float yaw = -90.0f;
@@ -124,6 +124,13 @@ int main()
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
 
+	float rewardZoneDepth = 2.0f;
+	float rewardZonePosition = -3.0f;
+
+	float rewardZoneLowZ = rewardZonePosition - rewardZoneDepth;
+	float rewardZoneHighZ = rewardZonePosition + rewardZoneDepth;
+	bool inRewardZone = false;
+
 	backWall.SetColor(0.5f, 0.5f, 0.9f);
 	backWall.SetScaling(corridorWidth, wallHeight);
 	backWall.SetPosition(0.0f, wallHeight/2, -corridorDepth);
@@ -148,44 +155,40 @@ int main()
 	floorSquare.SetPosition(0.0f, -wallHeight/2.0f, 0.0f);
 
 	rewardZone.SetColor(0.2f, 0.9f, 0.2f);
-	rewardZone.SetScaling(corridorWidth, 1.0f);
+	rewardZone.SetScaling(corridorWidth, rewardZoneDepth);
 	rewardZone.SetRotation(-90.0f, 0.0f, 0.0f);
-	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, 0.0f);
+	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition);
 
 	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	// Frame buffer test code: try to render to an offscreen framebuffer and copy relevant parts to each screen
+	// Create frame buffer for offscreen rendering, configured to draw to a texture buffer from which we sample
+	// to draw on each window. 
 	GLuint frameBufferObject;
-	glGenFramebuffers(1, &frameBufferObject);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		cout << "Framebuffer completed" << endl;
-	
-	// Off-screen texture rendering
-	int fullWidth =  2*initGlfw.windowInfo.width;
 	GLuint frameBufferTexture;
+	GLuint renderBufferObject;
+	
+	int fullWidth =  2*initGlfw.windowInfo.width;
 	glGenTextures(1, &frameBufferTexture);
 	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fullWidth, initGlfw.windowInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		cout << "Framebuffer completed" << endl;
-
-	// Off-screen renderbuffer for depth testing
-	GLuint renderBufferObject;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fullWidth, initGlfw.windowInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
 	glGenRenderbuffers(1, &renderBufferObject);
 	glBindRenderbuffer(GL_RENDERBUFFER, renderBufferObject);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fullWidth, initGlfw.windowInfo.height);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
+	glGenFramebuffers(1, &frameBufferObject);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 		cout << "Framebuffer completed" << endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Generate quads for left and right window
 	GLfloat leftScreenVertices[] = {
@@ -241,10 +244,23 @@ int main()
 		cameraPos += yVelocity * front;
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
 
+		// Collision detection, reset to previous position if wall boundary is crossed
 		if ( (cameraPos.x-wallDistanceMargin) < -corridorWidth | (cameraPos.x + wallDistanceMargin)> corridorWidth)
 			cameraPos.x = currentX;
 		if ((cameraPos.z-wallDistanceMargin) < -corridorDepth | (cameraPos.z + wallDistanceMargin) > corridorDepth)
 			cameraPos.z = currentZ;
+
+		// Check reward zone entries
+		if (!inRewardZone && (cameraPos.z > rewardZoneLowZ && cameraPos.z < rewardZoneHighZ))
+		{
+			inRewardZone = true;
+			cout << "Reward zone ENTRY detected." << endl;
+		}
+		if (inRewardZone && (cameraPos.z < rewardZoneLowZ || cameraPos.z > rewardZoneHighZ))
+		{
+			inRewardZone = false;
+			cout << "Reward zone EXIT detected." << endl;
+		}
 
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -256,12 +272,9 @@ int main()
 			glEnable(GL_DEPTH_TEST);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
-
-			// Show screen refresh rate
 			if (showFPS)
 				textRenderer.RenderText(textShaderProgram, fpsString, 0.0f, GLfloat(initGlfw.windowInfo.height - 20), 1.0, glm::vec3(0.8, 0.6, 0.6));
 
-			// Draw environment objects
 			glUseProgram(defaultShaderProgram);
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
@@ -272,10 +285,8 @@ int main()
 			leftWall.Draw();
 			rightWall.Draw();
 			floorSquare.Draw();
-
 			glBindTexture(GL_TEXTURE_2D, blankTexture);
 			rewardZone.Draw();
-
 			glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
