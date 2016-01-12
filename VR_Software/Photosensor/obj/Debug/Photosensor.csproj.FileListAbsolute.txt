@@ -1,8 +1,0 @@
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.csprojResolveAssemblyReference.cache
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.Form1.resources
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.Properties.Resources.resources
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.csproj.GenerateResource.Cache
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\bin\Debug\Photosensor.exe
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\bin\Debug\Photosensor.pdb
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.exe
-C:\VR_SYSTEM\System\Software\VR_Software\Photosensor\obj\Debug\Photosensor.pdb

@@ -1,9 +1,0 @@
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\bin\Debug\NetworkTest.exe.config
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\bin\Debug\NetworkTest.exe
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\bin\Debug\NetworkTest.pdb
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.csprojResolveAssemblyReference.cache
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.Main.resources
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.Properties.Resources.resources
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.csproj.GenerateResource.Cache
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.exe
-C:\VR_SYSTEM\System\Software\VR_Software\NetworkTest\obj\Debug\NetworkTest.pdb
