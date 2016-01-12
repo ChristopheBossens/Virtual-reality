@@ -2,6 +2,7 @@
 #include <GLFW\glfw3.h>
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -62,6 +63,70 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {}
 
 
+// Off-screen framebuffer definition
+GLuint frameBufferObject;
+GLuint frameBufferTexture;
+GLuint renderBufferObject;
+void GenerateOffscreenBuffer(int width, int height)
+{
+	int fullWidth = 2 * width;
+	glGenTextures(1, &frameBufferTexture);
+	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fullWidth, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenRenderbuffers(1, &renderBufferObject);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderBufferObject);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fullWidth, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glGenFramebuffers(1, &frameBufferObject);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+		cout << "Framebuffer completed" << endl;
+}
+
+// Vertices for window quads
+GLuint leftScreenVBO;
+GLuint rightScreenVBO;
+void GenerateWindowQuads()
+{
+	GLfloat leftScreenVertices[] = {
+		// Positions   // TexCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		1.0f, -1.0f,  0.5f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		1.0f, -1.0f,  0.5f, 0.0f,
+		1.0f,  1.0f,  0.5f, 1.0f
+	};
+	GLfloat rightScreenVertices[] = {
+		// Positions   // TexCoords
+		-1.0f,  1.0f,  0.5f, 1.0f,
+		-1.0f, -1.0f,  0.5f, 0.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.5f, 1.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+		1.0f,  1.0f,  1.0f, 1.0f
+	};
+	glGenBuffers(1, &leftScreenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, leftScreenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(leftScreenVertices), leftScreenVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &rightScreenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, rightScreenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rightScreenVertices), rightScreenVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 int main()
 {
 	InitGlfw initGlfw;
@@ -120,7 +185,7 @@ int main()
 	Square floorSquare;
 	Square frontWall;
 	Square rewardZone;
-	float corridorDepth = 10.0f;
+	float corridorDepth = 20.0f;
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
 
@@ -144,13 +209,14 @@ int main()
 	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
 	leftWall.SetPosition(-corridorWidth, wallHeight / 2, 0.0f);
 
-	rightWall.SetColor(0.5f, 0.9f, 0.5f);
+	rightWall.SetColor(1.0f, 1.0f, 1.0f);
 	rightWall.SetScaling(corridorDepth, wallHeight);
 	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
 	rightWall.SetPosition(corridorWidth, wallHeight / 2, 0.0f);
 
-	floorSquare.SetColor(0.1f, 0.1f, 0.1f);
+	floorSquare.SetColor(1.0f, 1.0f, 1.0f);
 	floorSquare.SetScaling(corridorWidth, corridorDepth);
+	floorSquare.MatchTextureToScale();
 	floorSquare.SetRotation(-90.0f, 0.0f, 0.0f);
 	floorSquare.SetPosition(0.0f, -wallHeight / 2.0f, 0.0f);
 
@@ -160,74 +226,16 @@ int main()
 	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition);
 
 	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-	glEnable(GL_DEPTH_TEST);
 
-	// Create frame buffer for offscreen rendering, configured to draw to a texture buffer from which we sample
-	// to draw on each window. 
-	GLuint frameBufferObject;
-	GLuint frameBufferTexture;
-	GLuint renderBufferObject;
-	
-	int fullWidth =  2*initGlfw.windowInfo.width;
-	glGenTextures(1, &frameBufferTexture);
-	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fullWidth, initGlfw.windowInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	
-	glGenRenderbuffers(1, &renderBufferObject);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderBufferObject);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fullWidth, initGlfw.windowInfo.height);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	glGenFramebuffers(1, &frameBufferObject);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		cout << "Framebuffer completed" << endl;
-
-	// Generate quads for left and right window
-	GLfloat leftScreenVertices[] = {
-		// Positions   // TexCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		1.0f, -1.0f,  0.5f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f,  0.5f, 0.0f,
-		1.0f,  1.0f,  0.5f, 1.0f
-	};
-	GLfloat rightScreenVertices[] = {
-		// Positions   // TexCoords
-		-1.0f,  1.0f,  0.5f, 1.0f,
-		-1.0f, -1.0f,  0.5f, 0.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.5f, 1.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f,  1.0f, 1.0f
-	};
-	GLuint leftScreenVBO;
-	GLuint rightScreenVBO;
-	glGenBuffers(1, &leftScreenVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, leftScreenVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(leftScreenVertices), leftScreenVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
-	glGenBuffers(1, &rightScreenVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, rightScreenVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(rightScreenVertices), rightScreenVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	GenerateOffscreenBuffer(initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+	GenerateWindowQuads();
 
 
-	
+	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 5);
+	// Generate gabor texture
+
 	// Game loop
 	int updateTick = 0;
-
 	while (!glfwWindowShouldClose(initGlfw.window))
 	{
 		// Get time
@@ -245,9 +253,9 @@ int main()
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
 
 		// Collision detection, reset to previous position if wall boundary is crossed
-		if ( (cameraPos.x-wallDistanceMargin) < -corridorWidth | (cameraPos.x + wallDistanceMargin)> corridorWidth)
+		if ( ((cameraPos.x-wallDistanceMargin) < -corridorWidth) | ((cameraPos.x + wallDistanceMargin)> corridorWidth))
 			cameraPos.x = currentX;
-		if ((cameraPos.z-wallDistanceMargin) < -corridorDepth | (cameraPos.z + wallDistanceMargin) > corridorDepth)
+		if (((cameraPos.z-wallDistanceMargin) < -corridorDepth) | ((cameraPos.z + wallDistanceMargin) > corridorDepth))
 			cameraPos.z = currentZ;
 
 		// Check reward zone entries
@@ -268,7 +276,7 @@ int main()
 		// Draw the complete screen to the offscreen framebuffer
 		glfwMakeContextCurrent(initGlfw.window);
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-		glViewport(0, 0, fullWidth, initGlfw.windowInfo.height);
+		glViewport(0, 0, 2*initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 			glEnable(GL_DEPTH_TEST);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
@@ -280,10 +288,13 @@ int main()
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
 			glBindTexture(GL_TEXTURE_2D, texture);
+
 			frontWall.Draw();
 			backWall.Draw();
-			leftWall.Draw();
+			leftWall.Draw();		
 			rightWall.Draw();
+
+			glBindTexture(GL_TEXTURE_2D, noiseTexture);
 			floorSquare.Draw();
 			glBindTexture(GL_TEXTURE_2D, blankTexture);
 			rewardZone.Draw();
