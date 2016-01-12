@@ -28,5 +28,6 @@ namespace Shapes
 		void SetRotation(float x, float y, float z);
 		void SetScaling(float x, float y);
 		void SetColor(float r, float g, float b);
+		void MatchTextureToScale();
 	};
 }
