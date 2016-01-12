@@ -21,10 +21,10 @@ Square::Square()
 	// Set default vertex buffer data
 	vertices = new float[32]{
 	//  x     y     z      r     g     b       u     v
-		1.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.5f,   1.0f, 1.0f,
-		1.0f,-1.0f, 0.0f,  0.0f, 1.0f, 0.5f,   1.0f, 0.0f,
-	   -1.0f,-1.0f, 0.0f,  0.0f, 0.0f, 0.5f,   0.0f, 0.0f,
-	   -1.0f, 1.0f, 0.0f,  1.0f, 1.0f, 0.5f,   0.0f, 1.0f };
+		1.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.5f,   1.0f, 0.0f,
+		1.0f,-1.0f, 0.0f,  0.0f, 1.0f, 0.5f,   1.0f, 1.0f,
+	   -1.0f,-1.0f, 0.0f,  0.0f, 0.0f, 0.5f,   0.0f, 1.0f,
+	   -1.0f, 1.0f, 0.0f,  1.0f, 1.0f, 0.5f,   0.0f, 0.0f };
 
 	GLuint indices[] = {
 		0, 1, 3,
@@ -164,7 +164,16 @@ void Square::SetColor(float r, float g, float b)
 		vertices[i + 2] = b;
 	}
 }
+void Square::MatchTextureToScale()
+{
+	for (int i = 6;i < 32;i += 8)
+	{
+		vertices[i] *= xScaling;
+		vertices[i + 1] *= yScaling;
 
+		UpdateVBO();
+	}
+}
 
 void Square::UpdateVBO()
 {

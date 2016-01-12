@@ -47,3 +47,53 @@ GLuint TextureLoader::LoadBlank()
 
 	return texture;
 }
+
+GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int maxLuminance, int smoothSize)
+{
+	/*
+	GLubyte generatorImage[textureHeight + smoothSize][textureWidth + smoothSize];
+	GLubyte noiseImage[textureHeight][textureWidth];
+	*/
+	GLubyte* generatorImage = new GLubyte[(textureHeight + smoothSize)*(textureWidth+smoothSize)];
+	GLubyte* noiseImage = new GLubyte[textureHeight*textureWidth];
+
+	for (int i = 0; i < ((textureHeight + smoothSize)*(textureWidth+smoothSize)); ++i)
+		generatorImage[i] = rand() % maxLuminance;
+
+	
+	int smoothOffset = (smoothSize - 1) / 2;
+	int idx;
+	for (int i = smoothOffset; i < (textureHeight + smoothOffset); ++i)
+	{
+		for (int j = smoothOffset; j < (textureWidth + smoothOffset);++j)
+		{
+			GLubyte totalNoiseValue = 0;
+			
+			for (int x = -smoothOffset; x <= smoothOffset;++x)
+			{
+				for (int y = -smoothOffset; y <= smoothOffset;++y)
+				{
+					idx = (i+x)*(textureWidth + smoothOffset) + (j+y);
+					totalNoiseValue += (generatorImage[idx]/(smoothSize*smoothSize));
+				}
+			}
+			//totalNoiseValue = generatorImage[idx];
+			idx = (i - smoothOffset)*(textureWidth) + (j - smoothOffset);
+			noiseImage[idx] = totalNoiseValue;
+		}
+	}
+	GLuint noiseTexture;
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, textureWidth, textureHeight, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, noiseImage);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	delete[] generatorImage;
+	delete[] noiseImage;
+	return noiseTexture;
+}
