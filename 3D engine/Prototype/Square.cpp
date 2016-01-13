@@ -163,6 +163,8 @@ void Square::SetColor(float r, float g, float b)
 		vertices[i + 1] = g;
 		vertices[i + 2] = b;
 	}
+
+	UpdateVBO();
 }
 void Square::MatchTextureToScale()
 {

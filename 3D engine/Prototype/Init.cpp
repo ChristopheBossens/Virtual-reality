@@ -109,6 +109,7 @@ void InitGlfw::InitContext()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, InitGlfw::contextInfo.majorVersion);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, InitGlfw::contextInfo.minorVersion);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 16);
 	cout << "DONE" << endl;
 }
 void InitGlfw::SetWindowInfo()
