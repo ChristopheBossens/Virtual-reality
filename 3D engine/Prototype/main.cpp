@@ -185,7 +185,7 @@ int main()
 	Square floorSquare;
 	Square frontWall;
 	Square rewardZone;
-	float corridorDepth = 20.0f;
+	float corridorDepth = 50.0f;
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
 
@@ -204,13 +204,15 @@ int main()
 	frontWall.SetScaling(corridorWidth, wallHeight);
 	frontWall.SetPosition(0.0f, wallHeight / 2.0f, corridorDepth);
 
-	leftWall.SetColor(0.5f, 0.9f, 0.5f);
+	leftWall.SetColor(1.0f, 1.0f, 1.0f);
 	leftWall.SetScaling(corridorDepth, wallHeight);
+	//leftWall.MatchTextureToScale();
 	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
 	leftWall.SetPosition(-corridorWidth, wallHeight / 2, 0.0f);
 
 	rightWall.SetColor(1.0f, 1.0f, 1.0f);
 	rightWall.SetScaling(corridorDepth, wallHeight);
+	//rightWall.MatchTextureToScale();
 	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
 	rightWall.SetPosition(corridorWidth, wallHeight / 2, 0.0f);
 
@@ -231,8 +233,8 @@ int main()
 	GenerateWindowQuads();
 
 
-	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 5);
-	// Generate gabor texture
+	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
+	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
 
 	// Game loop
 	int updateTick = 0;
@@ -291,7 +293,10 @@ int main()
 
 			frontWall.Draw();
 			backWall.Draw();
-			leftWall.Draw();		
+			
+
+			glBindTexture(GL_TEXTURE_2D, gratingTexture);
+			leftWall.Draw();
 			rightWall.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, noiseTexture);

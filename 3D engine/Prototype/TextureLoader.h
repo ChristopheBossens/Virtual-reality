@@ -3,6 +3,7 @@
 #include <SOIL.h>
 #include <GL\glew.h>
 #include <cstdlib>
+#include <glm\glm.hpp>
 
 namespace Core
 {
@@ -19,5 +20,6 @@ namespace Core
 		GLuint LoadRGB(const char* filename);
 		GLuint LoadBlank();
 		GLuint LoadNoiseTexture(int textureWidth, int textureHeight, int maxLuminance, int smoothSize);
+		GLuint LoadGratingTexture(int textureWidth, int texureHeight, int amplitude, double cyclesPerpixel, double orientation);
 	};
 }

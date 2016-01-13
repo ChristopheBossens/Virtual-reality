@@ -50,17 +50,16 @@ GLuint TextureLoader::LoadBlank()
 
 GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int maxLuminance, int smoothSize)
 {
-	/*
-	GLubyte generatorImage[textureHeight + smoothSize][textureWidth + smoothSize];
-	GLubyte noiseImage[textureHeight][textureWidth];
-	*/
+	// Need an uneven smooth size
+	if (smoothSize % 2 == 0)
+		return -1;
+
 	GLubyte* generatorImage = new GLubyte[(textureHeight + smoothSize)*(textureWidth+smoothSize)];
 	GLubyte* noiseImage = new GLubyte[textureHeight*textureWidth];
 
 	for (int i = 0; i < ((textureHeight + smoothSize)*(textureWidth+smoothSize)); ++i)
 		generatorImage[i] = rand() % maxLuminance;
 
-	
 	int smoothOffset = (smoothSize - 1) / 2;
 	int idx;
 	for (int i = smoothOffset; i < (textureHeight + smoothOffset); ++i)
@@ -77,7 +76,6 @@ GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int 
 					totalNoiseValue += (generatorImage[idx]/(smoothSize*smoothSize));
 				}
 			}
-			//totalNoiseValue = generatorImage[idx];
 			idx = (i - smoothOffset)*(textureWidth) + (j - smoothOffset);
 			noiseImage[idx] = totalNoiseValue;
 		}
@@ -86,14 +84,45 @@ GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, textureWidth, textureHeight, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, noiseImage);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, textureWidth, textureHeight, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, noiseImage);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	delete[] generatorImage;
 	delete[] noiseImage;
 	return noiseTexture;
+}
+
+GLuint TextureLoader::LoadGratingTexture(int textureWidth, int textureHeight, int amplitude, double cyclesPerPixel, double orientation)
+{
+	GLubyte* gratingImage = new GLubyte[textureHeight*textureWidth];
+
+	int idx;
+	for (int i = 0; i < textureHeight; ++i)
+	{
+		for (int j = 0; j < textureWidth; ++j)
+		{
+			double xRotated = j*glm::cos(orientation) + i*glm::sin(orientation);
+			idx = (i*textureWidth) + j;
+			gratingImage[idx] = 127 + (int)(amplitude * glm::cos(2.0 * 3.1458*cyclesPerPixel*xRotated));
+		}
+	}
+
+	GLuint textureID;
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, textureWidth, textureHeight, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, gratingImage);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	delete[] gratingImage;
+
+	return textureID;
 }
