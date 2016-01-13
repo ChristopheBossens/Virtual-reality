@@ -9,12 +9,14 @@ TextureLoader::TextureLoader()
 
 TextureLoader::~TextureLoader()
 {
-
+	for (std::vector<GLuint>::iterator it = textureVector.begin(); it != textureVector.end(); ++it)
+		glDeleteTextures(1, &(*it));
 }
 
 GLuint TextureLoader::LoadRGB(const char* filename)
 {
-	TextureLoader::image = SOIL_load_image(filename, &(TextureLoader::width), &(TextureLoader::height), 0, SOIL_LOAD_RGB);
+	int width, height;
+	TextureLoader::image = SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
 
 	if (image == 0)
 		return -1;
@@ -28,6 +30,7 @@ GLuint TextureLoader::LoadRGB(const char* filename)
 		glBindTexture(GL_TEXTURE_2D, 0);
 	SOIL_free_image_data(image);
 
+	textureVector.push_back(texture);
 	return texture;
 }
 
@@ -37,15 +40,16 @@ GLuint TextureLoader::LoadBlank()
 								 255, 255, 255, 255,
 								 255, 255, 255, 255,
 								 255, 255, 255, 255 };
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, buffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	return texture;
+	textureVector.push_back(textureID);
+	return textureID;
 }
 
 GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int maxLuminance, int smoothSize)
@@ -80,10 +84,10 @@ GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int 
 			noiseImage[idx] = totalNoiseValue;
 		}
 	}
-	GLuint noiseTexture;
+	GLuint textureID;
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glGenTextures(1, &noiseTexture);
-	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -93,7 +97,9 @@ GLuint TextureLoader::LoadNoiseTexture(int textureWidth, int textureHeight, int 
 
 	delete[] generatorImage;
 	delete[] noiseImage;
-	return noiseTexture;
+
+	textureVector.push_back(textureID);
+	return textureID;
 }
 
 GLuint TextureLoader::LoadGratingTexture(int textureWidth, int textureHeight, int amplitude, double cyclesPerPixel, double orientation)
@@ -124,5 +130,6 @@ GLuint TextureLoader::LoadGratingTexture(int textureWidth, int textureHeight, in
 
 	delete[] gratingImage;
 
+	textureVector.push_back(textureID);
 	return textureID;
 }

@@ -4,14 +4,13 @@
 #include <GL\glew.h>
 #include <cstdlib>
 #include <glm\glm.hpp>
-
+#include <vector>
 namespace Core
 {
 	class TextureLoader {
 	private:
 		unsigned char* image;
-		int width;
-		int height;
+		std::vector<GLuint> textureVector;
 
 	public:
 		TextureLoader();
