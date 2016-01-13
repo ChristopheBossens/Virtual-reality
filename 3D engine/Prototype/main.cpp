@@ -21,8 +21,9 @@ using namespace Shapes;
 
 bool showFPS = false;
 bool showWireframe = false;
-float yVelocity = 0;
-float xVelocity = 0;
+float yVelocity = 0.0f;
+float xVelocity = 0.0f;
+float textureVelocity = 0.05f;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
@@ -32,9 +33,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_F)
 			showFPS = !showFPS;
 		if (key == GLFW_KEY_UP)
+		{
 			yVelocity = 0.0f;
+			textureVelocity = 0.02f;
+		}
 		if (key == GLFW_KEY_DOWN)
+		{
 			yVelocity = 0.0f;
+			textureVelocity = 0.02f;
+		}
 		if (key == GLFW_KEY_LEFT)
 			xVelocity = 0.0f;
 		if (key == GLFW_KEY_RIGHT)
@@ -46,9 +53,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (action == GLFW_PRESS)
 	{
 		if (key == GLFW_KEY_UP)
+		{
 			yVelocity = 0.05f;
+			textureVelocity = -0.00f;
+		}
 		if (key == GLFW_KEY_DOWN)
+		{
 			yVelocity = -0.05f;
+			textureVelocity = 0.00f;
+		}
 		if (key == GLFW_KEY_LEFT)
 			xVelocity = 0.05f;
 		if (key == GLFW_KEY_RIGHT)
@@ -171,6 +184,9 @@ int main()
 	GLuint viewLocation = glGetUniformLocation(defaultShaderProgram, "view");
 	GLuint projectionLocation = glGetUniformLocation(defaultShaderProgram, "projection");
 
+	GLuint textureOffsetLocation = glGetUniformLocation(defaultShaderProgram, "textureOffset");
+
+	cout << "Texture offset location: " << textureOffsetLocation << endl;
 	double currentTime = glfwGetTime();
 	double delta;
 
@@ -185,7 +201,7 @@ int main()
 	Square floorSquare;
 	Square frontWall;
 	Square rewardZone;
-	float corridorDepth = 20.0f;
+	float corridorDepth = 50.0f;
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
 
@@ -204,13 +220,15 @@ int main()
 	frontWall.SetScaling(corridorWidth, wallHeight);
 	frontWall.SetPosition(0.0f, wallHeight / 2.0f, corridorDepth);
 
-	leftWall.SetColor(0.5f, 0.9f, 0.5f);
+	leftWall.SetColor(1.0f, 1.0f, 1.0f);
 	leftWall.SetScaling(corridorDepth, wallHeight);
+	//leftWall.MatchTextureToScale();
 	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
 	leftWall.SetPosition(-corridorWidth, wallHeight / 2, 0.0f);
 
 	rightWall.SetColor(1.0f, 1.0f, 1.0f);
 	rightWall.SetScaling(corridorDepth, wallHeight);
+	//rightWall.MatchTextureToScale();
 	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
 	rightWall.SetPosition(corridorWidth, wallHeight / 2, 0.0f);
 
@@ -231,8 +249,10 @@ int main()
 	GenerateWindowQuads();
 
 
-	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 5);
-	// Generate gabor texture
+	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
+	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
+	float textureOffset = 0.0;
+	//float textureVelocity = 0.05f;
 
 	// Game loop
 	int updateTick = 0;
@@ -241,6 +261,11 @@ int main()
 		// Get time
 		delta = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
+
+		textureOffset -= (textureVelocity*delta);
+		if (textureOffset < -1.0)
+			textureOffset += 1.0;
+
 		std::string fpsString = "FPS: " + std::to_string(delta);
 
 		// Update view matrix
@@ -287,17 +312,21 @@ int main()
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
+			glUniform1f(textureOffsetLocation, 0.0f);
 			glBindTexture(GL_TEXTURE_2D, texture);
 
 			frontWall.Draw();
 			backWall.Draw();
-			leftWall.Draw();		
-			rightWall.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, noiseTexture);
 			floorSquare.Draw();
 			glBindTexture(GL_TEXTURE_2D, blankTexture);
 			rewardZone.Draw();
+
+			glBindTexture(GL_TEXTURE_2D, gratingTexture);
+			glUniform1f(textureOffsetLocation, textureOffset);
+			leftWall.Draw();
+			rightWall.Draw();
 			glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
