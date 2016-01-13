@@ -21,9 +21,11 @@ using namespace Shapes;
 
 bool showFPS = false;
 bool showWireframe = false;
+bool applyDrift = false;
 float yVelocity = 0.0f;
 float xVelocity = 0.0f;
 float textureVelocity = 0.05f;
+float cameraVelocity = 0.09f;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
@@ -48,24 +50,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			xVelocity = 0.0f;
 		if (key == GLFW_KEY_W)
 			showWireframe = !showWireframe;
+		if (key == GLFW_KEY_D)
+			applyDrift = !applyDrift;
 	}
 
 	if (action == GLFW_PRESS)
 	{
 		if (key == GLFW_KEY_UP)
 		{
-			yVelocity = 0.05f;
+			yVelocity = cameraVelocity;
 			textureVelocity = -0.00f;
 		}
 		if (key == GLFW_KEY_DOWN)
 		{
-			yVelocity = -0.05f;
+			yVelocity = -cameraVelocity;
 			textureVelocity = 0.00f;
 		}
 		if (key == GLFW_KEY_LEFT)
-			xVelocity = 0.05f;
+			xVelocity = cameraVelocity;
 		if (key == GLFW_KEY_RIGHT)
-			xVelocity = -0.05f;
+			xVelocity = -cameraVelocity;
 	}
 }
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
@@ -173,7 +177,7 @@ int main()
 	float currentX;
 	float currentZ;
 
-	glm::vec3 cameraPos = glm::vec3(0.0f, -0.5f, 6.0f);
+	glm::vec3 cameraPos = glm::vec3(0.0f, -0.5f, 80.0f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	float yaw = -90.0f;
@@ -201,15 +205,18 @@ int main()
 	Square floorSquare;
 	Square frontWall;
 	Square rewardZone;
-	float corridorDepth = 50.0f;
+	Square rewardZone2;
+
+	float corridorDepth = 100.0f;
 	float corridorWidth = 3.0f;
 	float wallHeight = 2.0f;
 
 	float rewardZoneDepth = 2.0f;
-	float rewardZonePosition = -3.0f;
+	float rewardZonePosition1 = 70.0f;
+	float rewardZonePosition2 = 50;
 
-	float rewardZoneLowZ = rewardZonePosition - rewardZoneDepth;
-	float rewardZoneHighZ = rewardZonePosition + rewardZoneDepth;
+	float rewardZoneLowZ = rewardZonePosition1 - rewardZoneDepth;
+	float rewardZoneHighZ = rewardZonePosition1 + rewardZoneDepth;
 	bool inRewardZone = false;
 
 	backWall.SetColor(0.5f, 0.5f, 0.9f);
@@ -241,7 +248,12 @@ int main()
 	rewardZone.SetColor(0.2f, 0.9f, 0.2f);
 	rewardZone.SetScaling(corridorWidth, rewardZoneDepth);
 	rewardZone.SetRotation(-90.0f, 0.0f, 0.0f);
-	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition);
+	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition1);
+
+	rewardZone2.SetColor(0.9f, 0.2f, 0.2f);
+	rewardZone2.SetScaling(corridorWidth, rewardZoneDepth);
+	rewardZone2.SetRotation(-90.0f, 0.0f, 0.0f);
+	rewardZone2.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition2);
 
 	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 
@@ -253,19 +265,23 @@ int main()
 	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
 	float textureOffset = 0.0;
 	//float textureVelocity = 0.05f;
+	float timeInRewardZone = 0.0f;
 
 	// Game loop
 	int updateTick = 0;
+	int rewardZonePasses = 0;
 	while (!glfwWindowShouldClose(initGlfw.window))
 	{
 		// Get time
 		delta = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 
+		if (applyDrift)
+		{
 		textureOffset -= (textureVelocity*delta);
 		if (textureOffset < -1.0)
 			textureOffset += 1.0;
-
+		}
 		std::string fpsString = "FPS: " + std::to_string(delta);
 
 		// Update view matrix
@@ -278,31 +294,55 @@ int main()
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
 
 		// Collision detection, reset to previous position if wall boundary is crossed
+		glfwMakeContextCurrent(initGlfw.window);
 		if ( ((cameraPos.x-wallDistanceMargin) < -corridorWidth) | ((cameraPos.x + wallDistanceMargin)> corridorWidth))
 			cameraPos.x = currentX;
 		if (((cameraPos.z-wallDistanceMargin) < -corridorDepth) | ((cameraPos.z + wallDistanceMargin) > corridorDepth))
 			cameraPos.z = currentZ;
-
+		if (cameraPos.z < 60)
+		{
+			textureOffset += 0.1f; // Allows for smooth texture flow
+			cameraPos.z += 20.0f;
+			if (rewardZonePasses % 2 == 0)
+			{
+				rewardZone.SetColor(0.9f, 0.2f, 0.2f);
+				rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
+			}
+			else
+			{
+				rewardZone.SetColor(0.2f, 0.9f, 0.2f);
+				rewardZone2.SetColor(0.9f, 0.2f, 0.2f);
+			}
+			++rewardZonePasses;
+			cout << "Reward zone pas: " << rewardZonePasses << endl;
+		}
 		// Check reward zone entries
+		if (inRewardZone)
+		{
+			timeInRewardZone += delta;
+		}
 		if (!inRewardZone && (cameraPos.z > rewardZoneLowZ && cameraPos.z < rewardZoneHighZ))
 		{
 			inRewardZone = true;
+			timeInRewardZone = 0.0;
 			cout << "Reward zone ENTRY detected." << endl;
 		}
 		if (inRewardZone && (cameraPos.z < rewardZoneLowZ || cameraPos.z > rewardZoneHighZ))
 		{
 			inRewardZone = false;
 			cout << "Reward zone EXIT detected." << endl;
+			cout << "Total time in reward zone: " << timeInRewardZone << endl;
 		}
 
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 
 		// Draw the complete screen to the offscreen framebuffer
-		glfwMakeContextCurrent(initGlfw.window);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 		glViewport(0, 0, 2*initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_POLYGON_SMOOTH);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
 			if (showFPS)
@@ -316,12 +356,13 @@ int main()
 			glBindTexture(GL_TEXTURE_2D, texture);
 
 			frontWall.Draw();
-			backWall.Draw();
+			//backWall.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, noiseTexture);
 			floorSquare.Draw();
 			glBindTexture(GL_TEXTURE_2D, blankTexture);
 			rewardZone.Draw();
+			rewardZone2.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, gratingTexture);
 			glUniform1f(textureOffsetLocation, textureOffset);
@@ -372,6 +413,8 @@ int main()
 			cout << "Camera position: (" << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << ")" << endl;
 			updateTick = 0;
 		}
+
+
 	}
 	glfwTerminate();
 
