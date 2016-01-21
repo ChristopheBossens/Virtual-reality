@@ -48,7 +48,7 @@ namespace Core
 		~InitGlfw();
 
 		WindowInfo windowInfo;
-
+		bool twinCameraMode;
 		GLFWwindow* window;
 		GLFWwindow* window2;
 

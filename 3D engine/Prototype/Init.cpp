@@ -119,31 +119,40 @@ void InitGlfw::SetWindowInfo()
 	cout << "Environment configuration" << endl;
 	cout << "**************************" << endl;
 	cout << "i\tRetrieves a list of available screen modes." << endl;
-	cout << "f\tSet fullscreen mode" << endl;
-	cout << "w\tSet windowed mode (default)" << endl;
+	cout << "f\t Toggle fullscreen mode" << endl;
+	cout << "t\t Toggle camera mode" << endl;
 	cout << "x\tSet resolution width" << endl;
 	cout << "y\tSet resolution height" << endl << endl;
 	cout << "Press o to continue" << endl;
 
 	char userInput;
+	fullScreenMode = false;
+	twinCameraMode = false;
 	while (true)
 	{
 		cin >> userInput;
 		if (userInput == 'f')
 		{
-			
 			if (nMonitors < 2)
 			{
 				cout << "Only one monitor detected, fullscreen mode is not available" << endl;
 				continue;
 			}
-			fullScreenMode = true;
-			cout << "Fullscreen mode enabled" << endl;
+			fullScreenMode = !fullScreenMode;
+			if (fullScreenMode)
+				cout << "Fullscreen mode enabled" << endl;
+			else
+				cout << "Fullscreen mode disabled" << endl;
+
 		}
-		if (userInput == 'w')
+		if (userInput == 't')
 		{
-			fullScreenMode = false;
-			cout << "Window mode enabled" << endl;
+			twinCameraMode = !twinCameraMode;
+			if (twinCameraMode)
+				cout << "Dual camera mode enabled" << endl;
+			else
+				cout << "Dual camera mode disabled" << endl;
+
 		}
 		if (userInput == 'i')
 		{
@@ -155,7 +164,7 @@ void InitGlfw::SetWindowInfo()
 			break;
 		}
 
-		if (userInput = 's')
+		if (userInput == 's')
 		{
 			SetMotionReader();
 		}

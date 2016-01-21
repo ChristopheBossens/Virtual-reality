@@ -22,10 +22,13 @@ using namespace Shapes;
 bool showFPS = false;
 bool showWireframe = false;
 bool applyDrift = false;
+bool blockOnMotion = true;
+
 float yVelocity = 0.0f;
 float xVelocity = 0.0f;
-float textureVelocity = 0.05f;
+float textureVelocity = -0.05f;
 float cameraVelocity = 0.09f;
+float cameraRotation = 0.0f;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
@@ -37,12 +40,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_UP)
 		{
 			yVelocity = 0.0f;
-			textureVelocity = 0.02f;
+			textureVelocity = -0.02f;
 		}
 		if (key == GLFW_KEY_DOWN)
 		{
 			yVelocity = 0.0f;
-			textureVelocity = 0.02f;
+			textureVelocity = -0.02f;
 		}
 		if (key == GLFW_KEY_LEFT)
 			xVelocity = 0.0f;
@@ -52,6 +55,21 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			showWireframe = !showWireframe;
 		if (key == GLFW_KEY_D)
 			applyDrift = !applyDrift;
+		if (key == GLFW_KEY_B)
+		{
+			blockOnMotion = !blockOnMotion;
+			if (blockOnMotion)
+				cout << "Blocking drift when moving" << endl;
+			else
+				cout << "Blocking drift when moving disabled" << endl;
+		}
+		if (key == GLFW_KEY_A)
+		{
+			cameraRotation += 2.0f;
+			cout << "New camera Rotation: " << cameraRotation << endl;
+		}
+		if (key == GLFW_KEY_Z)
+			cameraRotation -= 2.0f;
 	}
 
 	if (action == GLFW_PRESS)
@@ -59,15 +77,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_UP)
 		{
 			yVelocity = cameraVelocity;
-			textureVelocity = -0.00f;
+			if (blockOnMotion)
+				textureVelocity = -0.00f;
 		}
 		if (key == GLFW_KEY_DOWN)
 		{
+			
 			yVelocity = -cameraVelocity;
-			textureVelocity = 0.00f;
+			if (blockOnMotion)
+				textureVelocity = 0.00f;
 		}
 		if (key == GLFW_KEY_LEFT)
 			xVelocity = cameraVelocity;
+		
 		if (key == GLFW_KEY_RIGHT)
 			xVelocity = -cameraVelocity;
 	}
@@ -173,7 +195,7 @@ int main()
 	cout << "Blank texture status: " << blankTexture << endl;
 
 	// Define camera component vectors
-	float wallDistanceMargin = 0.2f;
+	float wallDistanceMargin = 0.3f;
 	float currentX;
 	float currentZ;
 
@@ -197,6 +219,8 @@ int main()
 	glm::mat4 view;
 	glm::mat4 proj1;
 	glm::mat4 idm  = glm::mat4();
+	glm::mat4 camera1;
+	glm::mat4 camera2;
 
 	// Hard-coded virtual environment
 	Square backWall;
@@ -255,7 +279,10 @@ int main()
 	rewardZone2.SetRotation(-90.0f, 0.0f, 0.0f);
 	rewardZone2.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition2);
 
-	proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
+	if (initGlfw.twinCameraMode)
+		proj1 = glm::perspective(45.0f, (float)initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
+	else
+		proj1 = glm::perspective(45.0f, (float)2.0*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 
 	GenerateOffscreenBuffer(initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 	GenerateWindowQuads();
@@ -264,7 +291,6 @@ int main()
 	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
 	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
 	float textureOffset = 0.0;
-	//float textureVelocity = 0.05f;
 	float timeInRewardZone = 0.0f;
 
 	// Game loop
@@ -285,14 +311,21 @@ int main()
 		std::string fpsString = "FPS: " + std::to_string(delta);
 
 		// Update view matrix
-		// sensor readings need to be plugged in here
-		front = glm::vec3(cos(glm::radians(yaw)), 0.0f, sin(glm::radians(yaw)));
+		// Code for rotating about central axis
+		//yaw += xVelocity;
+		front.x = cos(glm::radians(yaw));
+		front.y = 0.0f;
+		front.z = sin(glm::radians(yaw));
+		cameraFront = glm::normalize(front);
+
+
 		currentX = cameraPos.x;
 		currentZ = cameraPos.z;
 
-		cameraPos += yVelocity * front;
+		cameraPos += yVelocity * cameraFront;
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
 
+		
 		// Collision detection, reset to previous position if wall boundary is crossed
 		glfwMakeContextCurrent(initGlfw.window);
 		if ( ((cameraPos.x-wallDistanceMargin) < -corridorWidth) | ((cameraPos.x + wallDistanceMargin)> corridorWidth))
@@ -338,28 +371,32 @@ int main()
 
 
 		// Draw the complete screen to the offscreen framebuffer
-		
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-		glViewport(0, 0, 2*initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+		if (initGlfw.twinCameraMode)
+		{ 
+			// Global configurations
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_POLYGON_SMOOTH);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
-			if (showFPS)
-				textRenderer.RenderText(textShaderProgram, fpsString, 0.0f, GLfloat(initGlfw.windowInfo.height - 20), 1.0, glm::vec3(0.8, 0.6, 0.6));
-
+			glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 			glUseProgram(defaultShaderProgram);
-			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
-			glUniform1f(textureOffsetLocation, 0.0f);
-			glBindTexture(GL_TEXTURE_2D, texture);
 
+			// Left screen
+			
+			glm::vec3  front1 = glm::vec3(cos(glm::radians(yaw+cameraRotation)), 0.0f, sin(glm::radians(yaw+cameraRotation)));
+			camera1 = glm::lookAt(cameraPos, cameraPos + front1, cameraUp);
+			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera1));
+			glUniform1f(textureOffsetLocation, 0.0f);
+			
+			glBindTexture(GL_TEXTURE_2D, texture);
 			frontWall.Draw();
-			//backWall.Draw();
+			backWall.Draw();
 
 			glBindTexture(GL_TEXTURE_2D, noiseTexture);
 			floorSquare.Draw();
+			
 			glBindTexture(GL_TEXTURE_2D, blankTexture);
 			rewardZone.Draw();
 			rewardZone2.Draw();
@@ -368,9 +405,67 @@ int main()
 			glUniform1f(textureOffsetLocation, textureOffset);
 			leftWall.Draw();
 			rightWall.Draw();
-			glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			
+			// Right screen
+			glViewport(initGlfw.windowInfo.width, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+			glm::vec3 front2 = glm::vec3(cos(glm::radians(yaw - cameraRotation)), 0.0f, sin(glm::radians(yaw - cameraRotation)));
+			camera2 = glm::lookAt(cameraPos, cameraPos + front2, cameraUp);
+			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera2));
+			glUniform1f(textureOffsetLocation, 0.0f);
 
+			glBindTexture(GL_TEXTURE_2D, texture);
+			frontWall.Draw();
+			backWall.Draw();
+
+			glBindTexture(GL_TEXTURE_2D, noiseTexture);
+			floorSquare.Draw();
+
+			glBindTexture(GL_TEXTURE_2D, blankTexture);
+			rewardZone.Draw();
+			rewardZone2.Draw();
+
+			glBindTexture(GL_TEXTURE_2D, gratingTexture);
+			glUniform1f(textureOffsetLocation, textureOffset);
+			leftWall.Draw();
+			rightWall.Draw();
+			
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_POLYGON_SMOOTH);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				if (showFPS)
+					textRenderer.RenderText(textShaderProgram, fpsString, 0.0f, GLfloat(initGlfw.windowInfo.height - 20), 1.0, glm::vec3(0.8, 0.6, 0.6));
+
+				glUseProgram(defaultShaderProgram);
+				glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+				glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
+				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
+				glUniform1f(textureOffsetLocation, 0.0f);
+				glBindTexture(GL_TEXTURE_2D, texture);
+
+				frontWall.Draw();
+				//backWall.Draw();
+
+				glBindTexture(GL_TEXTURE_2D, noiseTexture);
+				floorSquare.Draw();
+				glBindTexture(GL_TEXTURE_2D, blankTexture);
+				rewardZone.Draw();
+				rewardZone2.Draw();
+
+				glBindTexture(GL_TEXTURE_2D, gratingTexture);
+				glUniform1f(textureOffsetLocation, textureOffset);
+				leftWall.Draw();
+				rightWall.Draw();
+				glBindTexture(GL_TEXTURE_2D, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 
 		// First monitor drawing calls
 		//glfwMakeContextCurrent(initGlfw.window);
@@ -407,13 +502,14 @@ int main()
 		glfwPollEvents();
 
 		// Output information
+		/*
 		++updateTick;
 		if (updateTick % 60 == 0)
 		{
 			cout << "Camera position: (" << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << ")" << endl;
 			updateTick = 0;
 		}
-
+		*/
 
 	}
 	glfwTerminate();
