@@ -54,6 +54,9 @@
     <ClCompile Include="ScreenManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Square2D.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader_Loader.h">
@@ -83,6 +86,9 @@
     <ClInclude Include="ScreenManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Square2D.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\fragment_shader.glsl">
@@ -101,6 +107,24 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\simple_fragment_shader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\vertex_shader_2D.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\fragment_shader_2D.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\gabor_vertex_shader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\gabor_fragment_shader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\aperture_fragment_shader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\aperture_vertex_shader.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

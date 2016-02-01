@@ -152,6 +152,7 @@
     <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="Shader_loader.cpp" />
     <ClCompile Include="Square.cpp" />
+    <ClCompile Include="Square2D.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="Triangle.cpp" />
@@ -163,17 +164,24 @@
     <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="Shader_Loader.h" />
     <ClInclude Include="Square.h" />
+    <ClInclude Include="Square2D.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\aperture_fragment_shader.glsl" />
+    <None Include="Shaders\aperture_vertex_shader.glsl" />
     <None Include="Shaders\fragment_shader.glsl" />
+    <None Include="Shaders\fragment_shader_2D.glsl" />
+    <None Include="Shaders\gabor_fragment_shader.glsl" />
+    <None Include="Shaders\gabor_vertex_shader.glsl" />
     <None Include="Shaders\simple_fragment_shader.glsl" />
     <None Include="Shaders\simple_vertex_shader.glsl" />
     <None Include="Shaders\text_fs.glsl" />
     <None Include="Shaders\text_vs.glsl" />
     <None Include="Shaders\vertex_shader.glsl" />
+    <None Include="Shaders\vertex_shader_2D.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Changelog.txt" />

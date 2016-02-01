@@ -12,12 +12,14 @@
 #include "Shader_Loader.h"
 #include "Triangle.h"
 #include "Square.h"
+#include "Square2D.h"
 #include "Init.h"
 #include "TextureLoader.h"
 #include "TextRenderer.h"
 #include "RewardDelivery.h"
 #include "MotionReader.h"
 #include "ScreenManager.h"
+
 using namespace std;
 using namespace Core;
 using namespace Shapes;
@@ -26,15 +28,18 @@ bool showFPS = false;
 bool showWireframe = false;
 bool applyDrift = false;
 bool blockOnMotion = true;
+bool useOrthoTransform = true;
 
 float yVelocity = 0.0f;
 float xVelocity = 0.0f;
-float textureVelocity = -0.05f;
+//float textureVelocity = -0.05f;
+float textureVelocity = -5.0f;
 float cameraVelocity = 0.09f;
 float cameraRotation = 0.0f;
 
 MotionReader motionReader;
 
+// Input callback functions
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
@@ -136,18 +141,18 @@ int main()
 	glfwSetCursorPosCallback(initGlfw.window, MouseMoveCallback);
 
 	// Load shader programs
-	GLuint defaultShaderProgram;
-	GLuint textShaderProgram;
-	GLuint simpleShaderProgram;
-	defaultShaderProgram = shaderLoader.CreateProgram("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
-	textShaderProgram = shaderLoader.CreateProgram("Shaders\\text_vs.glsl", "Shaders\\text_fs.glsl");
-	simpleShaderProgram = shaderLoader.CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
-	
+	GLuint defaultShaderProgram = shaderLoader.CreateProgram("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
+	GLuint textShaderProgram = shaderLoader.CreateProgram("Shaders\\text_vs.glsl", "Shaders\\text_fs.glsl");
+	GLuint simpleShaderProgram = shaderLoader.CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
+	GLuint shaderProgram2D = shaderLoader.CreateProgram("Shaders\\vertex_shader_2D.glsl", "Shaders\\fragment_shader_2D.glsl");
+	GLuint gaborShaderProgram = shaderLoader.CreateProgram("Shaders\\gabor_vertex_shader.glsl", "Shaders\\gabor_fragment_shader.glsl");
+	GLuint apertureShaderProgram = shaderLoader.CreateProgram("Shaders\\aperture_vertex_shader.glsl", "Shaders\\aperture_fragment_shader.glsl");
+
 	// Load textures
-	GLuint texture = textureLoader.LoadRGB("Images\\container.jpg");
+	GLuint containerTexture = textureLoader.LoadRGB("Images\\container.jpg");
 	GLuint blankTexture = textureLoader.LoadBlank();
 	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
-	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
+	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 1.7);
 
 	// Define camera component vectors
 	float wallDistanceMargin = 0.3f;
@@ -175,6 +180,7 @@ int main()
 	glm::mat4 idm  = glm::mat4();
 	glm::mat4 camera1;
 	glm::mat4 camera2;
+	glm::mat4 orthoProjectionMatrix;
 
 	// Hard-coded virtual environment
 	Square backWall;
@@ -184,6 +190,7 @@ int main()
 	Square frontWall;
 	Square rewardZone;
 	Square rewardZone2;
+	Square testWall;
 
 	float corridorDepth = 100.0f;
 	float corridorWidth = 3.0f;
@@ -196,6 +203,8 @@ int main()
 	float rewardZoneLowZ = rewardZonePosition1 - rewardZoneDepth;
 	float rewardZoneHighZ = rewardZonePosition1 + rewardZoneDepth;
 	bool inRewardZone = false;
+
+	testWall.SetScaling(100.0f, 100.0f);
 
 	backWall.SetColor(0.5f, 0.5f, 0.9f);
 	backWall.SetScaling(corridorWidth, wallHeight);
@@ -233,11 +242,20 @@ int main()
 	rewardZone2.SetRotation(-90.0f, 0.0f, 0.0f);
 	rewardZone2.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition2);
 
+	// Examples for testing 2D orthographic projection
+	Square2D sprite;
+	sprite.SetPosition(100, 100);
+	sprite.SetSize(300, 300);
+	sprite.InitRenderData();
+
 	if (initGlfw.twinCameraMode)
 		proj1 = glm::perspective(45.0f, (float)initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 	else
-		proj1 = glm::perspective(45.0f, (float)2.0*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-
+	{
+		orthoProjectionMatrix = glm::ortho(0.0f, (float)2.0f*initGlfw.windowInfo.width, (float)initGlfw.windowInfo.height, 0.0f,-1.0f,1.0f);
+		proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
+	}
+	
 	float textureOffset = 0.0;
 	float timeInRewardZone = 0.0f;
 
@@ -250,7 +268,8 @@ int main()
 	rewardDelivery.StartReward();
 
 	ofstream logFile;
-	logFile.open("C:\\VR_SYSTEM\\Data\\3D_pilot\\20160128\\68680_R3.dat", ios::binary | ios::out);
+	
+	//logFile.open("C:\\VR_SYSTEM\\Data\\3D_pilot\\20160128\\68680_R3.dat", ios::binary | ios::out);
 
 	while (!glfwWindowShouldClose(initGlfw.window))
 	{
@@ -332,10 +351,10 @@ int main()
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 		// Write data to logfile
-		logFile.write((char*)&currentTime, sizeof(double));
+		/*logFile.write((char*)&currentTime, sizeof(double));
 		logFile.write((char*)&xMotionReader, sizeof(double));
 		logFile.write((char*)&cameraPos.z, sizeof(float));
-		logFile.write((char*)&inRewardZone, sizeof(bool));
+		logFile.write((char*)&inRewardZone, sizeof(bool));*/
 
 		// Draw the complete screen to the offscreen framebuffer
 		if (initGlfw.twinCameraMode)
@@ -357,7 +376,7 @@ int main()
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera1));
 			glUniform1f(textureOffsetLocation, 0.0f);
 			
-			glBindTexture(GL_TEXTURE_2D, texture);
+			glBindTexture(GL_TEXTURE_2D, containerTexture);
 			frontWall.Draw();
 			backWall.Draw();
 
@@ -380,7 +399,7 @@ int main()
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera2));
 			glUniform1f(textureOffsetLocation, 0.0f);
 
-			glBindTexture(GL_TEXTURE_2D, texture);
+			glBindTexture(GL_TEXTURE_2D, containerTexture);
 			frontWall.Draw();
 			backWall.Draw();
 
@@ -403,6 +422,35 @@ int main()
 		{
 			//glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 			screenManager.DrawToTexture();
+			if (useOrthoTransform)
+			{
+				glDisable(GL_DEPTH_TEST);
+				glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+
+				/*glUseProgram(shaderProgram2D);
+				glUniformMatrix4fv(glGetUniformLocation(shaderProgram2D, "projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
+				glUniform1f(glGetUniformLocation(shaderProgram2D, "offsetParameter"), textureOffset);
+*/
+
+				/*glUseProgram(gaborShaderProgram);
+				glUniformMatrix4fv(glGetUniformLocation(gaborShaderProgram,"projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
+				glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
+				glUniform4fv(glGetUniformLocation(gaborShaderProgram, "gratingParameters"), 1, glm::value_ptr(gratingParameters));
+				*/
+
+				glUseProgram(apertureShaderProgram);
+				glUniformMatrix4fv(glGetUniformLocation(apertureShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
+				glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
+				glUniform4fv(glGetUniformLocation(apertureShaderProgram, "gratingParameters"), 1, glm::value_ptr(gratingParameters));
+
+				sprite.Draw();
+				
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
+			else
+			{
 				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_POLYGON_SMOOTH);
@@ -416,7 +464,7 @@ int main()
 				glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
 				glUniform1f(textureOffsetLocation, 0.0f);
-				glBindTexture(GL_TEXTURE_2D, texture);
+				glBindTexture(GL_TEXTURE_2D, containerTexture);
 
 				frontWall.Draw();
 				//backWall.Draw();
@@ -432,7 +480,8 @@ int main()
 				leftWall.Draw();
 				rightWall.Draw();
 				glBindTexture(GL_TEXTURE_2D, 0);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
 		}
 
 		// First monitor drawing calls
