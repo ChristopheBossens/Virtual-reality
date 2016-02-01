@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <fstream>
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -14,7 +15,9 @@
 #include "Init.h"
 #include "TextureLoader.h"
 #include "TextRenderer.h"
-
+#include "RewardDelivery.h"
+#include "MotionReader.h"
+#include "ScreenManager.h"
 using namespace std;
 using namespace Core;
 using namespace Shapes;
@@ -29,10 +32,15 @@ float xVelocity = 0.0f;
 float textureVelocity = -0.05f;
 float cameraVelocity = 0.09f;
 float cameraRotation = 0.0f;
+
+MotionReader motionReader;
+
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
 	{
+		if (key == GLFW_KEY_L)
+			cout << "Input bytes pending: " << motionReader.InputBytesPending();
 		if (key == GLFW_KEY_ESCAPE)
 			glfwSetWindowShouldClose(window, 1);
 		if (key == GLFW_KEY_F)
@@ -102,85 +110,32 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {}
 
 
-// Off-screen framebuffer definition
-GLuint frameBufferObject;
-GLuint frameBufferTexture;
-GLuint renderBufferObject;
-void GenerateOffscreenBuffer(int width, int height)
-{
-	int fullWidth = 2 * width;
-	glGenTextures(1, &frameBufferTexture);
-	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fullWidth, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenRenderbuffers(1, &renderBufferObject);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderBufferObject);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fullWidth, height);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	glGenFramebuffers(1, &frameBufferObject);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferObject);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		cout << "Framebuffer completed" << endl;
-}
-
-// Vertices for window quads
-GLuint leftScreenVBO;
-GLuint rightScreenVBO;
-void GenerateWindowQuads()
-{
-	GLfloat leftScreenVertices[] = {
-		// Positions   // TexCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		1.0f, -1.0f,  0.5f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f,  0.5f, 0.0f,
-		1.0f,  1.0f,  0.5f, 1.0f
-	};
-	GLfloat rightScreenVertices[] = {
-		// Positions   // TexCoords
-		-1.0f,  1.0f,  0.5f, 1.0f,
-		-1.0f, -1.0f,  0.5f, 0.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.5f, 1.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f,  1.0f, 1.0f
-	};
-	glGenBuffers(1, &leftScreenVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, leftScreenVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(leftScreenVertices), leftScreenVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glGenBuffers(1, &rightScreenVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, rightScreenVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rightScreenVertices), rightScreenVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
 int main()
 {
 	InitGlfw initGlfw;
 	ShaderLoader shaderLoader;
 	TextureLoader textureLoader;
 	TextRenderer textRenderer;
-
-	// Init
+	ScreenManager screenManager;
+	RewardDelivery rewardDelivery;
+	
+	// Initiate components
 	initGlfw.Init();
 	textRenderer.Init();
+	screenManager.Initialize(initGlfw.windowInfo.width, initGlfw.windowInfo.height);	
+
+	rewardDelivery.Initialize(0, 2);
+	rewardDelivery.SetRewardDuration(150);
+	motionReader.Connect(8);
+	motionReader.SetParameters(40, 40, 31, 31, 200);
+	
+	// Set callback functions
 	glfwSetKeyCallback(initGlfw.window, KeyCallback);
 	glfwSetMouseButtonCallback(initGlfw.window, MouseButtonCallback);
 	glfwSetCursorPosCallback(initGlfw.window, MouseMoveCallback);
 
-	// Shader loading
+	// Load shader programs
 	GLuint defaultShaderProgram;
 	GLuint textShaderProgram;
 	GLuint simpleShaderProgram;
@@ -188,11 +143,11 @@ int main()
 	textShaderProgram = shaderLoader.CreateProgram("Shaders\\text_vs.glsl", "Shaders\\text_fs.glsl");
 	simpleShaderProgram = shaderLoader.CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
 	
-
-	// Load texture
+	// Load textures
 	GLuint texture = textureLoader.LoadRGB("Images\\container.jpg");
 	GLuint blankTexture = textureLoader.LoadBlank();
-	cout << "Blank texture status: " << blankTexture << endl;
+	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
+	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
 
 	// Define camera component vectors
 	float wallDistanceMargin = 0.3f;
@@ -212,7 +167,6 @@ int main()
 
 	GLuint textureOffsetLocation = glGetUniformLocation(defaultShaderProgram, "textureOffset");
 
-	cout << "Texture offset location: " << textureOffsetLocation << endl;
 	double currentTime = glfwGetTime();
 	double delta;
 
@@ -274,7 +228,7 @@ int main()
 	rewardZone.SetRotation(-90.0f, 0.0f, 0.0f);
 	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition1);
 
-	rewardZone2.SetColor(0.9f, 0.2f, 0.2f);
+	rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
 	rewardZone2.SetScaling(corridorWidth, rewardZoneDepth);
 	rewardZone2.SetRotation(-90.0f, 0.0f, 0.0f);
 	rewardZone2.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition2);
@@ -284,31 +238,36 @@ int main()
 	else
 		proj1 = glm::perspective(45.0f, (float)2.0*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
 
-	GenerateOffscreenBuffer(initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-	GenerateWindowQuads();
-
-
-	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
-	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 0.0);
 	float textureOffset = 0.0;
 	float timeInRewardZone = 0.0f;
 
 	// Game loop
 	int updateTick = 0;
 	int rewardZonePasses = 0;
+
+	motionReader.StartReading();
+	double xMotionReader, yMotionReader;
+	rewardDelivery.StartReward();
+
+	ofstream logFile;
+	logFile.open("C:\\VR_SYSTEM\\Data\\3D_pilot\\20160128\\68680_R3.dat", ios::binary | ios::out);
+
 	while (!glfwWindowShouldClose(initGlfw.window))
 	{
 		// Get time
 		delta = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 
+		motionReader.PollSensor(xMotionReader, yMotionReader);
+		xMotionReader = -xMotionReader/(100.0f*delta);
+
 		if (applyDrift)
 		{
-		textureOffset -= (textureVelocity*delta);
+		textureOffset -= (textureVelocity*(float)delta);
 		if (textureOffset < -1.0)
 			textureOffset += 1.0;
 		}
-		std::string fpsString = "FPS: " + std::to_string(delta);
+		std::string fpsString = "FPS: " + std::to_string(delta) +"\nxVel: " + std::to_string(xMotionReader);
 
 		// Update view matrix
 		// Code for rotating about central axis
@@ -322,7 +281,8 @@ int main()
 		currentX = cameraPos.x;
 		currentZ = cameraPos.z;
 
-		cameraPos += yVelocity * cameraFront;
+		//cameraPos += yVelocity * cameraFront;
+		cameraPos += (float)xMotionReader*cameraFront;
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
 
 		
@@ -338,26 +298,28 @@ int main()
 			cameraPos.z += 20.0f;
 			if (rewardZonePasses % 2 == 0)
 			{
-				rewardZone.SetColor(0.9f, 0.2f, 0.2f);
+				rewardZone.SetColor(0.2f, 0.9f, 0.2f);
 				rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
 			}
 			else
 			{
 				rewardZone.SetColor(0.2f, 0.9f, 0.2f);
-				rewardZone2.SetColor(0.9f, 0.2f, 0.2f);
+				rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
 			}
 			++rewardZonePasses;
 			cout << "Reward zone pas: " << rewardZonePasses << endl;
 		}
+
 		// Check reward zone entries
 		if (inRewardZone)
 		{
-			timeInRewardZone += delta;
+			timeInRewardZone += (float)delta;
 		}
 		if (!inRewardZone && (cameraPos.z > rewardZoneLowZ && cameraPos.z < rewardZoneHighZ))
 		{
 			inRewardZone = true;
 			timeInRewardZone = 0.0;
+			rewardDelivery.PulseReward();
 			cout << "Reward zone ENTRY detected." << endl;
 		}
 		if (inRewardZone && (cameraPos.z < rewardZoneLowZ || cameraPos.z > rewardZoneHighZ))
@@ -369,22 +331,27 @@ int main()
 
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
+		// Write data to logfile
+		logFile.write((char*)&currentTime, sizeof(double));
+		logFile.write((char*)&xMotionReader, sizeof(double));
+		logFile.write((char*)&cameraPos.z, sizeof(float));
+		logFile.write((char*)&inRewardZone, sizeof(bool));
 
 		// Draw the complete screen to the offscreen framebuffer
 		if (initGlfw.twinCameraMode)
 		{ 
 			// Global configurations
-			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+			//glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+			screenManager.DrawToTexture();
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_POLYGON_SMOOTH);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+			glViewport(initGlfw.windowInfo.width, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 			glUseProgram(defaultShaderProgram);
 			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
 
 			// Left screen
-			
 			glm::vec3  front1 = glm::vec3(cos(glm::radians(yaw+cameraRotation)), 0.0f, sin(glm::radians(yaw+cameraRotation)));
 			camera1 = glm::lookAt(cameraPos, cameraPos + front1, cameraUp);
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera1));
@@ -407,7 +374,7 @@ int main()
 			rightWall.Draw();
 			
 			// Right screen
-			glViewport(initGlfw.windowInfo.width, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+			glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 			glm::vec3 front2 = glm::vec3(cos(glm::radians(yaw - cameraRotation)), 0.0f, sin(glm::radians(yaw - cameraRotation)));
 			camera2 = glm::lookAt(cameraPos, cameraPos + front2, cameraUp);
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera2));
@@ -434,7 +401,8 @@ int main()
 		}
 		else
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+			//glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+			screenManager.DrawToTexture();
 				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_POLYGON_SMOOTH);
@@ -469,52 +437,27 @@ int main()
 
 		// First monitor drawing calls
 		//glfwMakeContextCurrent(initGlfw.window);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+		glfwMakeContextCurrent(initGlfw.window);
 		glUseProgram(simpleShaderProgram);
-		glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-		glBindBuffer(GL_ARRAY_BUFFER, rightScreenVBO);
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+		screenManager.DrawLeftTexture();
 		glfwSwapBuffers(initGlfw.window);
 
 		// Second monitor drawing calls
 		glfwMakeContextCurrent(initGlfw.window2);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDisable(GL_DEPTH_TEST);
 		glUseProgram(simpleShaderProgram);
-		glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-		glBindBuffer(GL_ARRAY_BUFFER, leftScreenVBO);
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
+		screenManager.DrawRightTexture();
 		glfwSwapBuffers(initGlfw.window2);
 
 		// Check events
 		glfwPollEvents();
 
-		// Output information
-		/*
-		++updateTick;
-		if (updateTick % 60 == 0)
-		{
-			cout << "Camera position: (" << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << ")" << endl;
-			updateTick = 0;
-		}
-		*/
 
 	}
+	logFile.close();
+	rewardDelivery.StopReward();
+	motionReader.StopReading();
 	glfwTerminate();
-
-	// Clean up after exiting
-	glDeleteFramebuffers(1, &frameBufferObject);
 	return 0;
 }

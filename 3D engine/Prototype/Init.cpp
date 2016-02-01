@@ -25,77 +25,6 @@ void InitGlfw::Init()
 	PrintGLInfo();
 }
 
-void InitGlfw::SetMotionReader()
-{
-	DCB dcb;
-
-	cout << "Trying to connect to serial device" << endl;
-	HANDLE serialPortHandle = CreateFileA("\\\\.\\COM5", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-	
-	cout << "Obtained serial handle: " << serialPortHandle << endl;
-	
-	if (serialPortHandle == INVALID_HANDLE_VALUE)
-	{
-		cout << "Status = INVALID_HANDLE_VALUE" << endl;
-		return;
-	}
-
-	if (!GetCommState(serialPortHandle, &dcb))
-	{
-		cout << "Failed to get serial port state" << endl;
-		CloseHandle(serialPortHandle);
-		return;
-	}
-
-	dcb.BaudRate = CBR_57600;
-	dcb.ByteSize = 8;
-	dcb.Parity = NOPARITY;
-	dcb.StopBits = ONESTOPBIT;
-	
-	if (!SetCommState(serialPortHandle, &dcb))
-	{
-		cout << "Failed to set serial port state" << endl;
-		CloseHandle(serialPortHandle);
-		return;
-	}
-
-	cout << "Serial port parameters: " << endl;
-	cout << "Baud rate = " << dcb.BaudRate << endl;
-	cout << "Byte size = " << dcb.ByteSize << endl;
-	cout << "Parity    = " << dcb.Parity << endl;
-	cout << "Stop bits = " << dcb.StopBits << endl;
-	
-	COMMTIMEOUTS timeouts;
-	GetCommTimeouts(serialPortHandle, &timeouts);
-
-	cout << "Serial port timeout parameters: " << endl;
-	cout << "Read interval timeout: " << timeouts.ReadIntervalTimeout << endl;
-	cout << "Read timout mulitplier: " << timeouts.ReadTotalTimeoutMultiplier << endl;
-	cout << "Read timeout constant : " << timeouts.ReadTotalTimeoutConstant << endl;
-	cout << "Write timeout multiplier: " << timeouts.WriteTotalTimeoutMultiplier << endl;
-	cout << "Write timeout constant: " << timeouts.WriteTotalTimeoutConstant << endl << endl;
-
-	COMSTAT comStat;
-	ClearCommError(serialPortHandle, NULL, &comStat);
-
-	cout << "Bytes available: " << comStat.cbInQue << endl;
-
-	DWORD bytesWritten;
-	DWORD bytesRead;
-	char txByte = 80;
-	char rxByte;
-
-	if (WriteFile(serialPortHandle, &txByte, 1, &bytesWritten, NULL))
-		cout << "Byte written" << endl;
-
-	if (ReadFile(serialPortHandle, &rxByte, 1, &bytesRead, 0))
-	{
-		cout << "Bytes read: " << bytesRead << endl;
-		cout << rxByte << endl;
-	}
-	CloseHandle(serialPortHandle);
-
-}
 void InitGlfw::GetMonitors()
 {
 	cout << "Retrieving monitor information...";
@@ -162,11 +91,6 @@ void InitGlfw::SetWindowInfo()
 		{
 			cout << "Starting virtual environment" << endl;
 			break;
-		}
-
-		if (userInput == 's')
-		{
-			SetMotionReader();
 		}
 	}
 	cout << endl;

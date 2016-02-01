@@ -12,3 +12,10 @@ Updated collision detection
 01/07/2016:
 Added detection of reward zone entries and exits
 
+01/15/2016:
+On stimulus computer, changing an in vector in the vertex shader causes the following error:
+Error compiling 'shader.glsl': error C7565: assignment to varying 'outTexCoord'
+
+To install measurement computing:
+ Had to install examples from CD to get the following files: cbw.h and cbw32.lib
+ cbw32.dll is in the measuremt computing directory and should work

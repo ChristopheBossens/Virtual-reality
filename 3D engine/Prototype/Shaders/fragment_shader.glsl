@@ -5,8 +5,10 @@ in vec2 outTexCoord;
 out vec4 color;
 
 uniform sampler2D textureSampler;
+uniform float textureOffset;
 
 void main()
 {
-	color = texture(textureSampler, outTexCoord) * vec4(outColor, 1.0f);
+	//outTexCoord.x += textureOffset;
+	color = texture(textureSampler, vec2(outTexCoord.x + textureOffset, outTexCoord.y)) * vec4(outColor, 1.0f);
 }

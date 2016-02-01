@@ -45,6 +45,15 @@
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="RewardDelivery.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionReader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader_Loader.h">
@@ -63,6 +72,15 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="TextRenderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="RewardDelivery.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionReader.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenManager.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
