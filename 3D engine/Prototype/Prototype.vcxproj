@@ -71,8 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\dev\freetype-2.6.2\source\include;C:\dev\glm\;C:\dev\soil\source\src;C:\dev\glfw-3.1.2\source\include;C:\dev\glew-1.13.0\source\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\freetype-2.6.2\source\objs\vc2010\Win32;C:\dev\soil\source\projects\VC9\Debug;C:\dev\glfw-3.1.2\build_msvc2012\src\Debug;C:\dev\glew-1.13.0\build_msvc2015\lib\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\dev\mcc\;C:\dev\freetype-2.6.2\source\include;C:\dev\glm\;C:\dev\soil\source\src;C:\dev\glfw-3.1.2\source\include;C:\dev\glew-1.13.0\source\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\mcc\;C:\dev\freetype-2.6.2\source\objs\vc2010\Win32;C:\dev\soil\source\projects\VC9\Debug;C:\dev\glfw-3.1.2\build_msvc2012\src\Debug;C:\dev\glew-1.13.0\build_msvc2015\lib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -94,7 +94,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype262d.lib;SOIL.lib;glew32d.lib;opengl32.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cbw32.lib;freetype262d.lib;SOIL.lib;glew32d.lib;opengl32.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -147,6 +147,9 @@
   <ItemGroup>
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MotionReader.cpp" />
+    <ClCompile Include="RewardDelivery.cpp" />
+    <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="Shader_loader.cpp" />
     <ClCompile Include="Square.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
@@ -155,6 +158,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.h" />
+    <ClInclude Include="MotionReader.h" />
+    <ClInclude Include="RewardDelivery.h" />
+    <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="Shader_Loader.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="TextRenderer.h" />
