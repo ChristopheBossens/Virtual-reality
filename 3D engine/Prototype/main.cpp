@@ -36,18 +36,29 @@ float xVelocity = 0.0f;
 float textureVelocity = -5.0f;
 float cameraVelocity = 0.09f;
 float cameraRotation = 0.0f;
+double mouseX = 0.0, mouseY = 0.0;
 
+// 2D experiment configuration variables
+int flipFrames = 60; // stimulus presentation duration
+bool isAlternating = false;
+bool stimulusVisible = true;
+bool increaseSize = false;
+bool decreaseSize = false;
+vector<int> gratingOrientations{ 0,15,30,45,60,75,90 };
+int orientationIndex = 0;
+
+// Global objects
 MotionReader motionReader;
+InitGlfw initGlfw;
+RewardDelivery rewardDelivery;
 
 // Input callback functions
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
 	{
-		if (key == GLFW_KEY_L)
-			cout << "Input bytes pending: " << motionReader.InputBytesPending();
 		if (key == GLFW_KEY_ESCAPE)
-			glfwSetWindowShouldClose(window, 1);
+			glfwSetWindowShouldClose(initGlfw.window, 1);
 		if (key == GLFW_KEY_F)
 			showFPS = !showFPS;
 		if (key == GLFW_KEY_UP)
@@ -78,11 +89,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		if (key == GLFW_KEY_A)
 		{
-			cameraRotation += 2.0f;
-			cout << "New camera Rotation: " << cameraRotation << endl;
+			isAlternating = !isAlternating;
+			if (isAlternating == false)
+				stimulusVisible = true;
 		}
-		if (key == GLFW_KEY_Z)
-			cameraRotation -= 2.0f;
+
 	}
 
 	if (action == GLFW_PRESS)
@@ -109,21 +120,32 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	
+	mouseX = xpos;
+	mouseY = ypos;
+	if (window == initGlfw.window2)
+		mouseX += initGlfw.windowInfo.width;
 }
+void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (yoffset > 0.5)
+		increaseSize = true;
+	if (yoffset < -0.5)
+		decreaseSize = true;
+}
+
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{}
-
-
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+		rewardDelivery.PulseReward();
+}
 
 int main()
 {
-	InitGlfw initGlfw;
 	ShaderLoader shaderLoader;
 	TextureLoader textureLoader;
 	TextRenderer textRenderer;
 	ScreenManager screenManager;
-	RewardDelivery rewardDelivery;
+	
 	
 	// Initiate components
 	initGlfw.Init();
@@ -135,10 +157,21 @@ int main()
 	motionReader.Connect(8);
 	motionReader.SetParameters(40, 40, 31, 31, 200);
 	
-	// Set callback functions
+	// Set callback functions for keyboard and mouse devices
 	glfwSetKeyCallback(initGlfw.window, KeyCallback);
-	glfwSetMouseButtonCallback(initGlfw.window, MouseButtonCallback);
+	glfwSetKeyCallback(initGlfw.window2, KeyCallback);
+
 	glfwSetCursorPosCallback(initGlfw.window, MouseMoveCallback);
+	glfwSetCursorPosCallback(initGlfw.window2, MouseMoveCallback);
+
+	glfwSetScrollCallback(initGlfw.window, MouseScrollCallback);
+	glfwSetScrollCallback(initGlfw.window2, MouseScrollCallback);
+
+	glfwSetMouseButtonCallback(initGlfw.window, MouseButtonCallback);
+	glfwSetMouseButtonCallback(initGlfw.window2, MouseButtonCallback);
+
+	glfwSetInputMode(initGlfw.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(initGlfw.window2, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	// Load shader programs
 	GLuint defaultShaderProgram = shaderLoader.CreateProgram("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
@@ -175,12 +208,21 @@ int main()
 	double currentTime = glfwGetTime();
 	double delta;
 
+	// Projection matrices and camera
 	glm::mat4 view;
 	glm::mat4 proj1;
 	glm::mat4 idm  = glm::mat4();
 	glm::mat4 camera1;
 	glm::mat4 camera2;
 	glm::mat4 orthoProjectionMatrix;
+
+	if (initGlfw.twinCameraMode)
+		proj1 = glm::perspective(45.0f, (float)initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
+	else
+	{
+		orthoProjectionMatrix = glm::ortho(0.0f, (float)2.0f*initGlfw.windowInfo.width, (float)initGlfw.windowInfo.height, 0.0f, -1.0f, 1.0f);
+		proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
+	}
 
 	// Hard-coded virtual environment
 	Square backWall;
@@ -244,22 +286,18 @@ int main()
 
 	// Examples for testing 2D orthographic projection
 	Square2D sprite;
+	int spriteWidth = 300;
+	int spriteHeight = 300;
 	sprite.SetPosition(100, 100);
-	sprite.SetSize(300, 300);
+	sprite.SetSize(spriteWidth, spriteHeight);
 	sprite.InitRenderData();
+	glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, 0.0f);
 
-	if (initGlfw.twinCameraMode)
-		proj1 = glm::perspective(45.0f, (float)initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-	else
-	{
-		orthoProjectionMatrix = glm::ortho(0.0f, (float)2.0f*initGlfw.windowInfo.width, (float)initGlfw.windowInfo.height, 0.0f,-1.0f,1.0f);
-		proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-	}
-	
 	float textureOffset = 0.0;
 	float timeInRewardZone = 0.0f;
 
 	// Game loop
+	unsigned int frameCount = 0;
 	int updateTick = 0;
 	int rewardZonePasses = 0;
 
@@ -350,6 +388,32 @@ int main()
 
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
+		// Updates for 2D experiment
+		if (frameCount%flipFrames == 0 && isAlternating)
+		{
+			stimulusVisible = !stimulusVisible;
+
+			if (stimulusVisible)
+			{
+				orientationIndex = (orientationIndex + 1) % gratingOrientations.size();
+				gratingParameters.x = gratingOrientations[orientationIndex] * 3.145892f / 180.0f;
+				cout << "Using orientation: " << gratingOrientations[orientationIndex] << endl;
+			}
+		}
+		if (increaseSize)
+		{
+			increaseSize = false;
+			spriteWidth += 10;
+			spriteHeight += 10;
+			sprite.SetSize(spriteWidth, spriteHeight);
+		}
+		if (decreaseSize)
+		{
+			decreaseSize = false;
+			spriteWidth -= 10;
+			spriteHeight -= 10;
+			sprite.SetSize(spriteWidth, spriteHeight);
+		}
 		// Write data to logfile
 		/*logFile.write((char*)&currentTime, sizeof(double));
 		logFile.write((char*)&xMotionReader, sizeof(double));
@@ -429,23 +493,20 @@ int main()
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
 
-				/*glUseProgram(shaderProgram2D);
-				glUniformMatrix4fv(glGetUniformLocation(shaderProgram2D, "projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
-				glUniform1f(glGetUniformLocation(shaderProgram2D, "offsetParameter"), textureOffset);
-*/
-
-				/*glUseProgram(gaborShaderProgram);
-				glUniformMatrix4fv(glGetUniformLocation(gaborShaderProgram,"projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
-				glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
-				glUniform4fv(glGetUniformLocation(gaborShaderProgram, "gratingParameters"), 1, glm::value_ptr(gratingParameters));
-				*/
+				// Adjust position of sprite
+				sprite.SetPosition((int)mouseX, (int)mouseY);
+				sprite.InitRenderData();
 
 				glUseProgram(apertureShaderProgram);
 				glUniformMatrix4fv(glGetUniformLocation(apertureShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
-				glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
+				//gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
+				gratingParameters.w = textureOffset;
 				glUniform4fv(glGetUniformLocation(apertureShaderProgram, "gratingParameters"), 1, glm::value_ptr(gratingParameters));
 
-				sprite.Draw();
+				
+				
+				if (stimulusVisible)
+					sprite.Draw();
 				
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			}
@@ -499,11 +560,14 @@ int main()
 		screenManager.DrawRightTexture();
 		glfwSwapBuffers(initGlfw.window2);
 
+		// Update frame count
+		++frameCount;
+
 		// Check events
 		glfwPollEvents();
-
-
 	}
+
+	// Clean up
 	logFile.close();
 	rewardDelivery.StopReward();
 	motionReader.StopReading();

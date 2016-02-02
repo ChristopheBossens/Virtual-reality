@@ -30,7 +30,7 @@ void Square2D::InitRenderData()
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &EBO);
 	}
-
+	
 	vertexData[0] = (float)x;
 	vertexData[4] = (float)x;
 	vertexData[8] = (float)(x + width);
@@ -39,7 +39,7 @@ void Square2D::InitRenderData()
 	vertexData[5] = (float)(y + height);
 	vertexData[9] = (float)(y + height);
 	vertexData[13] = (float)y;
-
+	
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 16, vertexData, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -51,8 +51,9 @@ void Square2D::InitRenderData()
 
 void Square2D::SetPosition(int x, int y)
 {
-	this->x = x;
-	this->y = y;
+	this->x = x - (this->width/2) ;
+	this->y = y - (this->height / 2);
+
 }
 
 void Square2D::SetSize(int w, int h)

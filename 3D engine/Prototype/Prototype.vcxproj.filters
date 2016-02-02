@@ -22,6 +22,9 @@
     <Filter Include="Shapes">
       <UniqueIdentifier>{bc81b863-21f3-4e03-8f16-fb709761a1a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Peripheral">
+      <UniqueIdentifier>{d4836eff-5025-49b7-97ed-66c218bd0c23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,17 +48,20 @@
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="RewardDelivery.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="MotionReader.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="ScreenManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Square2D.cpp">
       <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionReader.cpp">
+      <Filter>Peripheral</Filter>
+    </ClCompile>
+    <ClCompile Include="RewardDelivery.cpp">
+      <Filter>Peripheral</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -77,17 +83,20 @@
     <ClInclude Include="TextRenderer.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="RewardDelivery.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="MotionReader.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="ScreenManager.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Square2D.h">
       <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionReader.h">
+      <Filter>Peripheral</Filter>
+    </ClInclude>
+    <ClInclude Include="RewardDelivery.h">
+      <Filter>Peripheral</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

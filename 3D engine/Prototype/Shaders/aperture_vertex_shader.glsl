@@ -16,7 +16,7 @@ uniform vec4 gratingParameters;
 
 void main()
 {
-	rotationVector = vec2(cos(gratingParameters.x),sin(gratingParameters.y)) * gratingParameters.y;
+	rotationVector = vec2(cos(gratingParameters.x),sin(gratingParameters.x)) * gratingParameters.y;
 	apertureSize = -0.5/(gratingParameters.z*gratingParameters.z);
 	phaseOffset = gratingParameters.w;
 	textureCoordinates = vertex.zw + vec2(-0.5, -0.5);

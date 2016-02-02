@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MotionReader.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Init.h" />
     <ClInclude Include="MotionReader.h" />
     <ClInclude Include="RewardDelivery.h" />
