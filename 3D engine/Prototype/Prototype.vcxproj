@@ -146,30 +146,32 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Init.cpp" />
+    <ClCompile Include="Core.cpp" />
+    <ClCompile Include="ExperimentManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MotionReader.cpp" />
     <ClCompile Include="RewardDelivery.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="Shader_loader.cpp" />
     <ClCompile Include="Square.cpp" />
-    <ClCompile Include="Square2D.cpp" />
+    <ClCompile Include="StimulusQuad.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
-    <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Init.h" />
+    <ClInclude Include="Core.h" />
+    <ClInclude Include="ExperimentManager.h" />
     <ClInclude Include="MotionReader.h" />
     <ClInclude Include="RewardDelivery.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="Shader_Loader.h" />
     <ClInclude Include="Square.h" />
-    <ClInclude Include="Square2D.h" />
+    <ClInclude Include="StimulusQuad.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TextureLoader.h" />
-    <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\aperture_fragment_shader.glsl" />

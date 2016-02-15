@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <glm\glm.hpp>
 #include <vector>
-namespace Core
+namespace Engine
 {
 	class TextureLoader {
 	private:

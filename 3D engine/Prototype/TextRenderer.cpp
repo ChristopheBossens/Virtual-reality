@@ -1,7 +1,7 @@
 #include "TextRenderer.h"
 #include <iostream>
 
-using namespace Core;
+using namespace Engine;
 
 TextRenderer::TextRenderer()
 {

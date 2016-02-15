@@ -1,3 +1,4 @@
+#include "Shader_Loader.h"
 #include "ScreenManager.h"
 #include <iostream>
 
@@ -12,12 +13,31 @@ ScreenManager::~ScreenManager()
 	glDeleteTextures(1, &frameBufferTexture);
 }
 
-void ScreenManager::Initialize(int width, int height)
+void ScreenManager::Initialize(int width, int height, Engine::Core* core)
 {
+	this->core = core;
 	this->bufferWidth = 2 * width;
 	this->bufferHeight = height;
 	this->GenerateOffscreenBuffer();
 	this->GenerateWindowQuads();
+
+	simpleShader = Engine::ShaderLoader::CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
+}
+
+void ScreenManager::DrawToScreen()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glfwMakeContextCurrent(core->baseWindow);
+	glUseProgram(simpleShader);
+	glViewport(0, 0, core->windowInfo.width, core->windowInfo.height);
+	DrawLeftTexture();
+	glfwSwapBuffers(core->baseWindow);
+
+	glfwMakeContextCurrent(core->secondWindow);
+	glUseProgram(simpleShader);
+	glViewport(0, 0, core->windowInfo.width, core->windowInfo.height);
+	DrawRightTexture();
+	glfwSwapBuffers(core->secondWindow);
 }
 void ScreenManager::DrawLeftTexture()
 {
@@ -49,6 +69,8 @@ void ScreenManager::DrawRightTexture()
 }
 void ScreenManager::DrawToTexture()
 {
+	glfwMakeContextCurrent(core->baseWindow);
+	glViewport(0, 0, bufferWidth, bufferHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 }
 

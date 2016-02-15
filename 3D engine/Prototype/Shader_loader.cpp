@@ -1,14 +1,10 @@
 #include "Shader_Loader.h"
 #include <iostream>
-using namespace Core;
-
-ShaderLoader::ShaderLoader(void) {}
-ShaderLoader::~ShaderLoader(void) {}
+using namespace Engine;
 
 // Returns a string representation of the code in filename
 std::string ShaderLoader::ReadShader(char *filename)
 {
-	this->filename = filename;
 	std::string shaderCode;
 	std::ifstream file(filename, std::ios::in);
 
@@ -49,7 +45,7 @@ GLuint ShaderLoader::CreateShader(GLenum shaderType, std::string source, char* s
 
 		GLchar* infoLog = new char[infoLogLength];
 		glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
-		std::cout << "Error compiling shader " <<this->filename << ": " << infoLog << std::endl;
+		std::cout << "Error compiling " << shaderName << " " << infoLog << std::endl;
 		delete[] infoLog;
 		return -1;
 	}

@@ -25,6 +25,12 @@
     <Filter Include="Peripheral">
       <UniqueIdentifier>{d4836eff-5025-49b7-97ed-66c218bd0c23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3D">
+      <UniqueIdentifier>{72db4f06-8414-4204-a94c-dfeb4dca40a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2D">
+      <UniqueIdentifier>{65969e99-6adb-46ba-891a-98062724a786}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -33,14 +39,8 @@
     <ClCompile Include="Shader_loader.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Triangle.cpp">
-      <Filter>Shapes</Filter>
-    </ClCompile>
     <ClCompile Include="Square.cpp">
       <Filter>Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="Init.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="TextureLoader.cpp">
       <Filter>Core</Filter>
@@ -51,9 +51,6 @@
     <ClCompile Include="ScreenManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Square2D.cpp">
-      <Filter>Shapes</Filter>
-    </ClCompile>
     <ClCompile Include="MotionReader.cpp">
       <Filter>Peripheral</Filter>
     </ClCompile>
@@ -63,19 +60,25 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="StimulusQuad.cpp">
+      <Filter>2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ExperimentManager.cpp">
+      <Filter>2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader_Loader.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Triangle.h">
-      <Filter>Shapes</Filter>
-    </ClInclude>
     <ClInclude Include="Square.h">
       <Filter>Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Init.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="TextureLoader.h">
       <Filter>Core</Filter>
@@ -86,9 +89,6 @@
     <ClInclude Include="ScreenManager.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Square2D.h">
-      <Filter>Shapes</Filter>
-    </ClInclude>
     <ClInclude Include="MotionReader.h">
       <Filter>Peripheral</Filter>
     </ClInclude>
@@ -97,6 +97,18 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="StimulusQuad.h">
+      <Filter>2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ExperimentManager.h">
+      <Filter>2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

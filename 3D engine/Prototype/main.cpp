@@ -4,38 +4,23 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
+#include <algorithm>
 
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
-#include "Shader_Loader.h"
-#include "Triangle.h"
-#include "Square.h"
-#include "Square2D.h"
-#include "Init.h"
-#include "TextureLoader.h"
-#include "TextRenderer.h"
+#include "Core.h"
 #include "RewardDelivery.h"
 #include "MotionReader.h"
 #include "ScreenManager.h"
+#include "SceneManager.h"
+#include "ExperimentManager.h"
 
 using namespace std;
-using namespace Core;
+using namespace Engine;
 using namespace Shapes;
 
-bool showFPS = false;
-bool showWireframe = false;
-bool applyDrift = false;
-bool blockOnMotion = true;
-bool useOrthoTransform = true;
+bool use2D = true;
 
-float yVelocity = 0.0f;
-float xVelocity = 0.0f;
-//float textureVelocity = -0.05f;
-float textureVelocity = -5.0f;
-float cameraVelocity = 0.09f;
-float cameraRotation = 0.0f;
+float xDelta = 0.0f;
+float zDelta = 0.0f;
 double mouseX = 0.0, mouseY = 0.0;
 
 // 2D experiment configuration variables
@@ -49,7 +34,7 @@ int orientationIndex = 0;
 
 // Global objects
 MotionReader motionReader;
-InitGlfw initGlfw;
+Engine::Core core;
 RewardDelivery rewardDelivery;
 
 // Input callback functions
@@ -58,35 +43,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (action == GLFW_RELEASE)
 	{
 		if (key == GLFW_KEY_ESCAPE)
-			glfwSetWindowShouldClose(initGlfw.window, 1);
-		if (key == GLFW_KEY_F)
-			showFPS = !showFPS;
-		if (key == GLFW_KEY_UP)
-		{
-			yVelocity = 0.0f;
-			textureVelocity = -0.02f;
-		}
-		if (key == GLFW_KEY_DOWN)
-		{
-			yVelocity = 0.0f;
-			textureVelocity = -0.02f;
-		}
-		if (key == GLFW_KEY_LEFT)
-			xVelocity = 0.0f;
-		if (key == GLFW_KEY_RIGHT)
-			xVelocity = 0.0f;
-		if (key == GLFW_KEY_W)
-			showWireframe = !showWireframe;
-		if (key == GLFW_KEY_D)
-			applyDrift = !applyDrift;
-		if (key == GLFW_KEY_B)
-		{
-			blockOnMotion = !blockOnMotion;
-			if (blockOnMotion)
-				cout << "Blocking drift when moving" << endl;
-			else
-				cout << "Blocking drift when moving disabled" << endl;
-		}
+			glfwSetWindowShouldClose(core.baseWindow, 1);
+
+
 		if (key == GLFW_KEY_A)
 		{
 			isAlternating = !isAlternating;
@@ -94,36 +53,46 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				stimulusVisible = true;
 		}
 
+		switch (key)
+		{
+		case GLFW_KEY_UP:
+		case GLFW_KEY_DOWN:
+			zDelta = 0.0f;
+			break;
+
+		case GLFW_KEY_LEFT:
+		case GLFW_KEY_RIGHT:
+			xDelta = 0.0f;
+			break;
+		}
+
 	}
 
 	if (action == GLFW_PRESS)
 	{
-		if (key == GLFW_KEY_UP)
+		switch (key)
 		{
-			yVelocity = cameraVelocity;
-			if (blockOnMotion)
-				textureVelocity = -0.00f;
+		case GLFW_KEY_UP:
+			zDelta = -0.01f;
+			break;
+		case GLFW_KEY_DOWN:
+			zDelta = 0.01f;
+			break;
+		case GLFW_KEY_LEFT:
+			xDelta = -0.01f;
+			break;
+		case GLFW_KEY_RIGHT:
+			xDelta = 0.01f;
+			break;
 		}
-		if (key == GLFW_KEY_DOWN)
-		{
-			
-			yVelocity = -cameraVelocity;
-			if (blockOnMotion)
-				textureVelocity = 0.00f;
-		}
-		if (key == GLFW_KEY_LEFT)
-			xVelocity = cameraVelocity;
-		
-		if (key == GLFW_KEY_RIGHT)
-			xVelocity = -cameraVelocity;
 	}
 }
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	mouseX = xpos;
 	mouseY = ypos;
-	if (window == initGlfw.window2)
-		mouseX += initGlfw.windowInfo.width;
+	if (window == core.secondWindow)
+		mouseX += core.windowInfo.width;
 }
 void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
@@ -132,174 +101,124 @@ void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	if (yoffset < -0.5)
 		decreaseSize = true;
 }
-
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		rewardDelivery.PulseReward();
 }
 
+void ConfigureCore()
+{
+	WindowInfo windowInfo;
+
+	cout << endl;
+	cout << "**************************" << endl;
+	cout << "Environment configuration" << endl;
+	cout << "**************************" << endl;
+	cout << "i\tRetrieves a list of available screen modes." << endl;
+	cout << "f\t Toggle fullscreen mode" << endl;
+	cout << "t\t Toggle camera mode" << endl;
+	cout << "w\t Set resolution width" << endl;
+	cout << "h\t Set resolution height" << endl;
+	cout << "v\t Toggle 2D/3D mode" << endl << endl;
+	cout << "Press o to continue" << endl;
+
+	char userInput;
+	int number;
+	while (true)
+	{
+		cin >> userInput;
+		if ( (userInput == 'f') || (userInput == 'F'))
+			windowInfo.useFullscreen = !windowInfo.useFullscreen;
+		if ((userInput == 'w') || (userInput == 'W'))
+		{
+			cin >> number;
+			windowInfo.width = number;
+		}
+		if ((userInput == 'h') || userInput == ('H'))
+		{
+			cin >> number;
+			windowInfo.height = number;
+		}
+		if ((userInput == 'i') || userInput == ('I'))
+		{
+			core.PrintMonitorInfo();
+		}
+		if ((userInput == 'o') || (userInput == 'O'))
+		{
+			cout << "Starting engine" << endl;
+			break;
+		}
+		if ((userInput == 'v') || (userInput == 'V'))
+		{
+			use2D = !use2D;
+			if (use2D)
+				cout << "2D mode enabled" << endl;
+			else
+				cout << "3D mode enabled" << endl;
+		}
+	}
+	core.Initialize(windowInfo);
+}
 int main()
 {
-	ShaderLoader shaderLoader;
 	TextureLoader textureLoader;
-	TextRenderer textRenderer;
 	ScreenManager screenManager;
-	
-	
+	SceneManager corridor;
+	ExperimentManager experimentManager;
+
+	// Load configuration file
+	ifstream configFile("CONFIG.txt", std::ifstream::in);
+	int rewardDuration = 0;
+	if (configFile.is_open())
+	{
+		cout << "File is open" << endl;
+		configFile >> rewardDuration;
+		configFile.close();
+	}
+	cout << "Retrieved reward duration: " << rewardDuration << endl;
+
 	// Initiate components
-	initGlfw.Init();
-	textRenderer.Init();
-	screenManager.Initialize(initGlfw.windowInfo.width, initGlfw.windowInfo.height);	
+	ConfigureCore();
+	screenManager.Initialize(core.windowInfo.width, core.windowInfo.height, &core);	
 
 	rewardDelivery.Initialize(0, 2);
 	rewardDelivery.SetRewardDuration(150);
 	motionReader.Connect(8);
 	motionReader.SetParameters(40, 40, 31, 31, 200);
 	
-	// Set callback functions for keyboard and mouse devices
-	glfwSetKeyCallback(initGlfw.window, KeyCallback);
-	glfwSetKeyCallback(initGlfw.window2, KeyCallback);
-
-	glfwSetCursorPosCallback(initGlfw.window, MouseMoveCallback);
-	glfwSetCursorPosCallback(initGlfw.window2, MouseMoveCallback);
-
-	glfwSetScrollCallback(initGlfw.window, MouseScrollCallback);
-	glfwSetScrollCallback(initGlfw.window2, MouseScrollCallback);
-
-	glfwSetMouseButtonCallback(initGlfw.window, MouseButtonCallback);
-	glfwSetMouseButtonCallback(initGlfw.window2, MouseButtonCallback);
-
-	glfwSetInputMode(initGlfw.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	glfwSetInputMode(initGlfw.window2, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-	// Load shader programs
-	GLuint defaultShaderProgram = shaderLoader.CreateProgram("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
-	GLuint textShaderProgram = shaderLoader.CreateProgram("Shaders\\text_vs.glsl", "Shaders\\text_fs.glsl");
-	GLuint simpleShaderProgram = shaderLoader.CreateProgram("Shaders\\simple_vertex_shader.glsl", "Shaders\\simple_fragment_shader.glsl");
-	GLuint shaderProgram2D = shaderLoader.CreateProgram("Shaders\\vertex_shader_2D.glsl", "Shaders\\fragment_shader_2D.glsl");
-	GLuint gaborShaderProgram = shaderLoader.CreateProgram("Shaders\\gabor_vertex_shader.glsl", "Shaders\\gabor_fragment_shader.glsl");
-	GLuint apertureShaderProgram = shaderLoader.CreateProgram("Shaders\\aperture_vertex_shader.glsl", "Shaders\\aperture_fragment_shader.glsl");
-
-	// Load textures
-	GLuint containerTexture = textureLoader.LoadRGB("Images\\container.jpg");
-	GLuint blankTexture = textureLoader.LoadBlank();
-	GLuint noiseTexture = textureLoader.LoadNoiseTexture(512, 512, 128, 7);
-	GLuint gratingTexture = textureLoader.LoadGratingTexture(512, 512, 100, 0.02, 1.7);
-
-	// Define camera component vectors
-	float wallDistanceMargin = 0.3f;
-	float currentX;
-	float currentZ;
-
-	glm::vec3 cameraPos = glm::vec3(0.0f, -0.5f, 80.0f);
-	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	float yaw = -90.0f;
-	glm::vec3 front(cos(glm::radians(yaw)), 0.0f, sin(glm::radians(yaw)));
 	
-	// Define model and view matrices and get shader locations
-	GLuint modelLocation = glGetUniformLocation(defaultShaderProgram, "model");
-	GLuint viewLocation = glGetUniformLocation(defaultShaderProgram, "view");
-	GLuint projectionLocation = glGetUniformLocation(defaultShaderProgram, "projection");
+	corridor.LoadTextures(&textureLoader);
+	corridor.LoadShaders();
+	corridor.LoadMesh();
+	corridor.SetProjectionMatrix(45.0f, 2.0f*core.windowInfo.width / core.windowInfo.height);
 
-	GLuint textureOffsetLocation = glGetUniformLocation(defaultShaderProgram, "textureOffset");
+	experimentManager.SetOrthographicMatrix(0.0f, 2 * core.windowInfo.width, core.windowInfo.height, 0.0f);
+	experimentManager.LoadTestExperiment(&textureLoader);
+
+	// Set callback functions for keyboard and mouse devices
+	glfwSetKeyCallback(core.baseWindow, KeyCallback);
+	glfwSetKeyCallback(core.secondWindow, KeyCallback);
+
+	glfwSetCursorPosCallback(core.baseWindow, MouseMoveCallback);
+	glfwSetCursorPosCallback(core.secondWindow, MouseMoveCallback);
+
+	glfwSetScrollCallback(core.baseWindow, MouseScrollCallback);
+	glfwSetScrollCallback(core.secondWindow, MouseScrollCallback);
+
+	glfwSetMouseButtonCallback(core.baseWindow, MouseButtonCallback);
+	glfwSetMouseButtonCallback(core.secondWindow, MouseButtonCallback);
+
+	glfwSetInputMode(core.baseWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(core.secondWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
 
 	double currentTime = glfwGetTime();
 	double delta;
 
-	// Projection matrices and camera
-	glm::mat4 view;
-	glm::mat4 proj1;
-	glm::mat4 idm  = glm::mat4();
-	glm::mat4 camera1;
-	glm::mat4 camera2;
-	glm::mat4 orthoProjectionMatrix;
-
-	if (initGlfw.twinCameraMode)
-		proj1 = glm::perspective(45.0f, (float)initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-	else
-	{
-		orthoProjectionMatrix = glm::ortho(0.0f, (float)2.0f*initGlfw.windowInfo.width, (float)initGlfw.windowInfo.height, 0.0f, -1.0f, 1.0f);
-		proj1 = glm::perspective(45.0f, (float)2.0f*initGlfw.windowInfo.width / initGlfw.windowInfo.height, 0.1f, 100.0f);
-	}
-
-	// Hard-coded virtual environment
-	Square backWall;
-	Square leftWall;
-	Square rightWall;
-	Square floorSquare;
-	Square frontWall;
-	Square rewardZone;
-	Square rewardZone2;
-	Square testWall;
-
-	float corridorDepth = 100.0f;
-	float corridorWidth = 3.0f;
-	float wallHeight = 2.0f;
-
-	float rewardZoneDepth = 2.0f;
-	float rewardZonePosition1 = 70.0f;
-	float rewardZonePosition2 = 50;
-
-	float rewardZoneLowZ = rewardZonePosition1 - rewardZoneDepth;
-	float rewardZoneHighZ = rewardZonePosition1 + rewardZoneDepth;
-	bool inRewardZone = false;
-
-	testWall.SetScaling(100.0f, 100.0f);
-
-	backWall.SetColor(0.5f, 0.5f, 0.9f);
-	backWall.SetScaling(corridorWidth, wallHeight);
-	backWall.SetPosition(0.0f, wallHeight / 2, -corridorDepth);
-
-	frontWall.SetColor(0.5f, 0.5f, 0.9f);
-	frontWall.SetScaling(corridorWidth, wallHeight);
-	frontWall.SetPosition(0.0f, wallHeight / 2.0f, corridorDepth);
-
-	leftWall.SetColor(1.0f, 1.0f, 1.0f);
-	leftWall.SetScaling(corridorDepth, wallHeight);
-	//leftWall.MatchTextureToScale();
-	leftWall.SetRotation(0.0f, 90.0f, 0.0f);
-	leftWall.SetPosition(-corridorWidth, wallHeight / 2, 0.0f);
-
-	rightWall.SetColor(1.0f, 1.0f, 1.0f);
-	rightWall.SetScaling(corridorDepth, wallHeight);
-	//rightWall.MatchTextureToScale();
-	rightWall.SetRotation(0.0f, 90.0f, 0.0f);
-	rightWall.SetPosition(corridorWidth, wallHeight / 2, 0.0f);
-
-	floorSquare.SetColor(1.0f, 1.0f, 1.0f);
-	floorSquare.SetScaling(corridorWidth, corridorDepth);
-	floorSquare.MatchTextureToScale();
-	floorSquare.SetRotation(-90.0f, 0.0f, 0.0f);
-	floorSquare.SetPosition(0.0f, -wallHeight / 2.0f, 0.0f);
-
-	rewardZone.SetColor(0.2f, 0.9f, 0.2f);
-	rewardZone.SetScaling(corridorWidth, rewardZoneDepth);
-	rewardZone.SetRotation(-90.0f, 0.0f, 0.0f);
-	rewardZone.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition1);
-
-	rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
-	rewardZone2.SetScaling(corridorWidth, rewardZoneDepth);
-	rewardZone2.SetRotation(-90.0f, 0.0f, 0.0f);
-	rewardZone2.SetPosition(0.0f, -wallHeight / 2.0f + 0.01f, rewardZonePosition2);
-
-	// Examples for testing 2D orthographic projection
-	Square2D sprite;
-	int spriteWidth = 300;
-	int spriteHeight = 300;
-	sprite.SetPosition(100, 100);
-	sprite.SetSize(spriteWidth, spriteHeight);
-	sprite.InitRenderData();
-	glm::vec4 gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, 0.0f);
-
-	float textureOffset = 0.0;
-	float timeInRewardZone = 0.0f;
-
 	// Game loop
 	unsigned int frameCount = 0;
 	int updateTick = 0;
-	int rewardZonePasses = 0;
 
 	motionReader.StartReading();
 	double xMotionReader, yMotionReader;
@@ -309,7 +228,7 @@ int main()
 	
 	//logFile.open("C:\\VR_SYSTEM\\Data\\3D_pilot\\20160128\\68680_R3.dat", ios::binary | ios::out);
 
-	while (!glfwWindowShouldClose(initGlfw.window))
+	while (!glfwWindowShouldClose(core.baseWindow))
 	{
 		// Get time
 		delta = glfwGetTime() - currentTime;
@@ -318,102 +237,7 @@ int main()
 		motionReader.PollSensor(xMotionReader, yMotionReader);
 		xMotionReader = -xMotionReader/(100.0f*delta);
 
-		if (applyDrift)
-		{
-		textureOffset -= (textureVelocity*(float)delta);
-		if (textureOffset < -1.0)
-			textureOffset += 1.0;
-		}
-		std::string fpsString = "FPS: " + std::to_string(delta) +"\nxVel: " + std::to_string(xMotionReader);
-
-		// Update view matrix
-		// Code for rotating about central axis
-		//yaw += xVelocity;
-		front.x = cos(glm::radians(yaw));
-		front.y = 0.0f;
-		front.z = sin(glm::radians(yaw));
-		cameraFront = glm::normalize(front);
-
-
-		currentX = cameraPos.x;
-		currentZ = cameraPos.z;
-
-		//cameraPos += yVelocity * cameraFront;
-		cameraPos += (float)xMotionReader*cameraFront;
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * xVelocity;
-
 		
-		// Collision detection, reset to previous position if wall boundary is crossed
-		glfwMakeContextCurrent(initGlfw.window);
-		if ( ((cameraPos.x-wallDistanceMargin) < -corridorWidth) | ((cameraPos.x + wallDistanceMargin)> corridorWidth))
-			cameraPos.x = currentX;
-		if (((cameraPos.z-wallDistanceMargin) < -corridorDepth) | ((cameraPos.z + wallDistanceMargin) > corridorDepth))
-			cameraPos.z = currentZ;
-		if (cameraPos.z < 60)
-		{
-			textureOffset += 0.1f; // Allows for smooth texture flow
-			cameraPos.z += 20.0f;
-			if (rewardZonePasses % 2 == 0)
-			{
-				rewardZone.SetColor(0.2f, 0.9f, 0.2f);
-				rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
-			}
-			else
-			{
-				rewardZone.SetColor(0.2f, 0.9f, 0.2f);
-				rewardZone2.SetColor(0.2f, 0.9f, 0.2f);
-			}
-			++rewardZonePasses;
-			cout << "Reward zone pas: " << rewardZonePasses << endl;
-		}
-
-		// Check reward zone entries
-		if (inRewardZone)
-		{
-			timeInRewardZone += (float)delta;
-		}
-		if (!inRewardZone && (cameraPos.z > rewardZoneLowZ && cameraPos.z < rewardZoneHighZ))
-		{
-			inRewardZone = true;
-			timeInRewardZone = 0.0;
-			rewardDelivery.PulseReward();
-			cout << "Reward zone ENTRY detected." << endl;
-		}
-		if (inRewardZone && (cameraPos.z < rewardZoneLowZ || cameraPos.z > rewardZoneHighZ))
-		{
-			inRewardZone = false;
-			cout << "Reward zone EXIT detected." << endl;
-			cout << "Total time in reward zone: " << timeInRewardZone << endl;
-		}
-
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-		// Updates for 2D experiment
-		if (frameCount%flipFrames == 0 && isAlternating)
-		{
-			stimulusVisible = !stimulusVisible;
-
-			if (stimulusVisible)
-			{
-				orientationIndex = (orientationIndex + 1) % gratingOrientations.size();
-				gratingParameters.x = gratingOrientations[orientationIndex] * 3.145892f / 180.0f;
-				cout << "Using orientation: " << gratingOrientations[orientationIndex] << endl;
-			}
-		}
-		if (increaseSize)
-		{
-			increaseSize = false;
-			spriteWidth += 10;
-			spriteHeight += 10;
-			sprite.SetSize(spriteWidth, spriteHeight);
-		}
-		if (decreaseSize)
-		{
-			decreaseSize = false;
-			spriteWidth -= 10;
-			spriteHeight -= 10;
-			sprite.SetSize(spriteWidth, spriteHeight);
-		}
 		// Write data to logfile
 		/*logFile.write((char*)&currentTime, sizeof(double));
 		logFile.write((char*)&xMotionReader, sizeof(double));
@@ -421,144 +245,18 @@ int main()
 		logFile.write((char*)&inRewardZone, sizeof(bool));*/
 
 		// Draw the complete screen to the offscreen framebuffer
-		if (initGlfw.twinCameraMode)
-		{ 
-			// Global configurations
-			//glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-			screenManager.DrawToTexture();
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_POLYGON_SMOOTH);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glViewport(initGlfw.windowInfo.width, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-			glUseProgram(defaultShaderProgram);
-			glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
-			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
-
-			// Left screen
-			glm::vec3  front1 = glm::vec3(cos(glm::radians(yaw+cameraRotation)), 0.0f, sin(glm::radians(yaw+cameraRotation)));
-			camera1 = glm::lookAt(cameraPos, cameraPos + front1, cameraUp);
-			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera1));
-			glUniform1f(textureOffsetLocation, 0.0f);
-			
-			glBindTexture(GL_TEXTURE_2D, containerTexture);
-			frontWall.Draw();
-			backWall.Draw();
-
-			glBindTexture(GL_TEXTURE_2D, noiseTexture);
-			floorSquare.Draw();
-			
-			glBindTexture(GL_TEXTURE_2D, blankTexture);
-			rewardZone.Draw();
-			rewardZone2.Draw();
-
-			glBindTexture(GL_TEXTURE_2D, gratingTexture);
-			glUniform1f(textureOffsetLocation, textureOffset);
-			leftWall.Draw();
-			rightWall.Draw();
-			
-			// Right screen
-			glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-			glm::vec3 front2 = glm::vec3(cos(glm::radians(yaw - cameraRotation)), 0.0f, sin(glm::radians(yaw - cameraRotation)));
-			camera2 = glm::lookAt(cameraPos, cameraPos + front2, cameraUp);
-			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera2));
-			glUniform1f(textureOffsetLocation, 0.0f);
-
-			glBindTexture(GL_TEXTURE_2D, containerTexture);
-			frontWall.Draw();
-			backWall.Draw();
-
-			glBindTexture(GL_TEXTURE_2D, noiseTexture);
-			floorSquare.Draw();
-
-			glBindTexture(GL_TEXTURE_2D, blankTexture);
-			rewardZone.Draw();
-			rewardZone2.Draw();
-
-			glBindTexture(GL_TEXTURE_2D, gratingTexture);
-			glUniform1f(textureOffsetLocation, textureOffset);
-			leftWall.Draw();
-			rightWall.Draw();
-			
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		screenManager.DrawToTexture();
+		if (use2D)
+		{
+			experimentManager.Update(mouseX, mouseY);
+			experimentManager.DrawExperiment();
 		}
 		else
 		{
-			//glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-			screenManager.DrawToTexture();
-			if (useOrthoTransform)
-			{
-				glDisable(GL_DEPTH_TEST);
-				glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-
-				// Adjust position of sprite
-				sprite.SetPosition((int)mouseX, (int)mouseY);
-				sprite.InitRenderData();
-
-				glUseProgram(apertureShaderProgram);
-				glUniformMatrix4fv(glGetUniformLocation(apertureShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(orthoProjectionMatrix));
-				//gratingParameters = glm::vec4(0.5f, 100.0f, 0.05f, textureOffset);
-				gratingParameters.w = textureOffset;
-				glUniform4fv(glGetUniformLocation(apertureShaderProgram, "gratingParameters"), 1, glm::value_ptr(gratingParameters));
-
-				
-				
-				if (stimulusVisible)
-					sprite.Draw();
-				
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			}
-			else
-			{
-				glViewport(0, 0, 2 * initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-				glEnable(GL_DEPTH_TEST);
-				glEnable(GL_POLYGON_SMOOTH);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-				if (showFPS)
-					textRenderer.RenderText(textShaderProgram, fpsString, 0.0f, GLfloat(initGlfw.windowInfo.height - 20), 1.0, glm::vec3(0.8, 0.6, 0.6));
-
-				glUseProgram(defaultShaderProgram);
-				glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
-				glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj1));
-				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(idm));
-				glUniform1f(textureOffsetLocation, 0.0f);
-				glBindTexture(GL_TEXTURE_2D, containerTexture);
-
-				frontWall.Draw();
-				//backWall.Draw();
-
-				glBindTexture(GL_TEXTURE_2D, noiseTexture);
-				floorSquare.Draw();
-				glBindTexture(GL_TEXTURE_2D, blankTexture);
-				rewardZone.Draw();
-				rewardZone2.Draw();
-
-				glBindTexture(GL_TEXTURE_2D, gratingTexture);
-				glUniform1f(textureOffsetLocation, textureOffset);
-				leftWall.Draw();
-				rightWall.Draw();
-				glBindTexture(GL_TEXTURE_2D, 0);
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			}
+			corridor.UpdatePosition(xDelta, 0.0f, zDelta);
+			corridor.Draw();
 		}
-
-		// First monitor drawing calls
-		//glfwMakeContextCurrent(initGlfw.window);
-		glfwMakeContextCurrent(initGlfw.window);
-		glUseProgram(simpleShaderProgram);
-		glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-		screenManager.DrawLeftTexture();
-		glfwSwapBuffers(initGlfw.window);
-
-		// Second monitor drawing calls
-		glfwMakeContextCurrent(initGlfw.window2);
-		glUseProgram(simpleShaderProgram);
-		glViewport(0, 0, initGlfw.windowInfo.width, initGlfw.windowInfo.height);
-		screenManager.DrawRightTexture();
-		glfwSwapBuffers(initGlfw.window2);
+		screenManager.DrawToScreen();
 
 		// Update frame count
 		++frameCount;
@@ -571,6 +269,16 @@ int main()
 	logFile.close();
 	rewardDelivery.StopReward();
 	motionReader.StopReading();
+
 	glfwTerminate();
+
+	cout << "Requested window resolution: " << endl;
+	cout << core.windowInfo.width << " x " << core.windowInfo.height << endl;
+
+	cout << "Obtained window resolution: " << endl;
+	cout << core.baseWindowInfo.width << " x " << core.baseWindowInfo.height << endl;
+	cout << core.secondWindowInfo.width << " x " << core.secondWindowInfo.width << endl;
+	cin.get();
+	system("pause");
 	return 0;
 }

@@ -11,6 +11,7 @@ namespace Shapes
 		GLuint VBO;
 		GLuint EBO;
 		GLuint VAO;
+		GLuint texID;
 
 		float xPosition, yPosition, zPosition;
 		float xRotation, yRotation, zRotation;
@@ -29,5 +30,6 @@ namespace Shapes
 		void SetScaling(float x, float y);
 		void SetColor(float r, float g, float b);
 		void MatchTextureToScale();
+		void SetTextureID(GLuint texID);
 	};
 }

@@ -69,7 +69,7 @@ void MotionReader::Connect(int portNumber)
 	// Connect to serial port
 	if (this->isInitialized | this->isReading)
 	{
-		std::cout << "Already connected to motion sensor" << std::endl;
+		std::cout << "Motion sensor: Already connected to motion sensor." << std::endl;
 		return;
 	}
 
@@ -77,7 +77,7 @@ void MotionReader::Connect(int portNumber)
 	serialPortHandle = CreateFileA("\\\\.\\COM8", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (serialPortHandle == INVALID_HANDLE_VALUE)
 	{
-		std::cout << "Invalid handle to serial port. Is the number correct?" << std::endl;
+		std::cout << "Motion sensor: Invalid handle to serial port." << std::endl;
 		return;
 	}
 
@@ -85,7 +85,7 @@ void MotionReader::Connect(int portNumber)
 	DCB dcb;
 	if (!GetCommState(serialPortHandle, &dcb))
 	{
-		std::cout << "Failed to retrieve serial port device parameters" << std::endl;
+		std::cout << "Motion sensor: Failed to retrieve serial port device parameters." << std::endl;
 		CloseHandle(serialPortHandle);
 		return;
 	}

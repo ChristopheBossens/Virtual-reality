@@ -6,18 +6,15 @@
 #include <fstream>
 #include <vector>
 
-namespace Core
+namespace Engine
 {
 	class ShaderLoader
 	{
 	private:
-		char* filename;
-		std::string ReadShader(char* filename);
-		GLuint CreateShader(GLenum shaderType, std::string source, char* shaderName);
+		static std::string ReadShader(char* filename);
+		static GLuint CreateShader(GLenum shaderType, std::string source, char* shaderName);
 
 	public:
-		ShaderLoader(void);
-		~ShaderLoader(void);
-		GLuint CreateProgram(char* vsFilename, char* fsFilename);
+		static GLuint CreateProgram(char* vsFilename, char* fsFilename);
 	};
 }

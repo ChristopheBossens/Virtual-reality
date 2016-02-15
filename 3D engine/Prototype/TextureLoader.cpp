@@ -1,6 +1,6 @@
 #include "TextureLoader.h"
 
-using namespace Core;
+using namespace Engine;
 
 TextureLoader::TextureLoader()
 {

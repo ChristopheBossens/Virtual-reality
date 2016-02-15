@@ -177,7 +177,10 @@ void Square::MatchTextureToScale()
 		UpdateVBO();
 	}
 }
-
+void Square::SetTextureID(GLuint texID)
+{
+	this->texID = texID;
+}
 void Square::UpdateVBO()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -194,7 +197,10 @@ void Square::Draw()
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
+
+		glBindTexture(GL_TEXTURE_2D, texID);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

@@ -8,7 +8,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-namespace Core
+namespace Engine
 {
 	struct Character {
 		GLuint TextureID;
