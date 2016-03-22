@@ -2,7 +2,7 @@
 #include <vector>
 #include "Square.h"
 #include "Camera.h"
-#include "TextureLoader.h"
+#include "ResourceManager.h"
 
 class SceneManager
 {
@@ -46,7 +46,8 @@ public:
 
 	void SetProjectionMatrix(float fieldOfview, float aspectRatio);
 	void LoadMesh();
-	void LoadTextures(Engine::TextureLoader* textureLoader);
+	void LoadScene(int sceneIndex);
+	void LoadTextures();
 	void LoadShaders();
 
 	void UpdatePosition(float deltaX = 0.0f, float deltaY = 0.0f, float deltaZ = 0.0f);

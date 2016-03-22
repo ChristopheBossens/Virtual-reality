@@ -11,20 +11,23 @@
 class StimulusQuad
 {
 private:
-	int x, y;
+	int top, left;
 	int width, height;
 
 	GLfloat* vertexData;
 	GLuint* vertexIndices;
-
 	GLuint VBO, EBO;
 public:
 	StimulusQuad();
 	~StimulusQuad();
 
 	void InitRenderData();
+	void SetCenter(int x, int y);
 	void SetPosition(int x, int y);
 	void SetSize(int w, int h);
 
-	void Draw();
+	void Draw(GLuint texID = 0);
+
+	int GetWidth();
+	int GetHeight();
 };

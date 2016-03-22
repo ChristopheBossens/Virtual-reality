@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Experiment>
+   <StimulusList>
+      <Stimulus>
+         <ID>1</ID>
+         <StimulusType>image</StimulusType>
+         <Location>C:\Image.jpg</Location>
+      </Stimulus>
+      <Stimulus>
+         <ID>2</ID>
+         <StimulusType>aperture_grating</StimulusType>
+      </Stimulus>
+      <Stimulus>
+         <ID>3</ID>
+         <StimulusType>gabor_grating</StimulusType>
+      </Stimulus>
+   </StimulusList>
+   <Block Repeat="1" ShuffleOrder="random">
+      <Trial>
+         <TrialOrder>3</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="velocity">
+            <ThresholdVelocity>5</ThresholdVelocity>
+            <ThresholdDuration>60</ThresholdDuration>
+            <ThresholdComparator>&gt;</ThresholdComparator>
+         </Reward>
+         <Stimulus id="1">
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>2</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>3</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="velocity">
+            <ThresholdVelocity>5</ThresholdVelocity>
+            <ThresholdDuration>60</ThresholdDuration>
+            <ThresholdComparator>&gt;</ThresholdComparator>
+         </Reward>
+         <Stimulus id="1">
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>2</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>3</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="velocity">
+            <ThresholdVelocity>5</ThresholdVelocity>
+            <ThresholdDuration>60</ThresholdDuration>
+            <ThresholdComparator>&gt;</ThresholdComparator>
+         </Reward>
+         <Stimulus id="1">
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>2</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+   </Block>
+   <Block Repeat="1" ShuffleOrder="random">
+      <Trial>
+         <TrialOrder>2</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>1</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>2</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+      <Trial>
+         <TrialOrder>1</TrialOrder>
+         <TrialCondition>1</TrialCondition>
+         <Transition type="duration">
+            <Duration>60</Duration>
+         </Transition>
+         <Reward type="none"/>
+         <Stimulus id="2">
+            <orientation>0</orientation>
+            <spatialFrequency>0</spatialFrequency>
+            <phase>0</phase>
+            <radius>0</radius>
+            <StartDisplay>0</StartDisplay>
+            <StopDisplay>0</StopDisplay>
+            <Top>0</Top>
+            <Left>0</Left>
+            <Width>0</Width>
+            <Height>0</Height>
+         </Stimulus>
+      </Trial>
+   </Block>
+</Experiment>

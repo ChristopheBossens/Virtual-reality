@@ -10,9 +10,14 @@ private:
 	glm::vec3 cameraFront;
 	glm::vec3 cameraUp;
 
+	glm::mat4 projectionMatrix;
+	glm::mat4 viewMatrix;
 	float yaw;
 public:
 	Camera();
+
+	float* pViewMatrix;
+	float* pProjectionMatrix;
 
 	float GetX();
 	float GetY();
@@ -24,4 +29,5 @@ public:
 	void SetZ(float z);
 
 	glm::mat4 GetViewMatrix();
+	void SetProjectionMatrix(float fieldOfView, float aspectRatio, float nearZ = 0.1f, float farZ = 100.0f);
 };

@@ -1,10 +1,8 @@
 #include "SceneManager.h"
-#include "Shader_Loader.h"
-#include "TextureLoader.h"
+#include "ResourceManager.h"
 
 using namespace std;
 using namespace Shapes;
-using namespace Engine;
 
 SceneManager::SceneManager()
 {
@@ -54,7 +52,7 @@ void SceneManager::LoadMesh()
 	square->SetColor(1.0f, 1.0f, 1.0f);
 	square->SetScaling(corridorDepth, wallHeight);
 	square->SetRotation(0.0f, 90.0f, 0.0f);
-	square->SetPosition(corridorWidth, wallHeight / 2.0, 0.0f);
+	square->SetPosition(corridorWidth, wallHeight / 2.0f, 0.0f);
 	square->SetTextureID(gratingTexture);
 	squareList.push_back(square);
 
@@ -88,7 +86,7 @@ void SceneManager::LoadMesh()
 }
 void SceneManager::LoadShaders()
 {
-	defaultShaderProgram = ShaderLoader::CreateProgram("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
+	defaultShaderProgram = ResourceManager::LoadShader("Shaders\\vertex_shader.glsl", "Shaders\\fragment_shader.glsl");
 
 	modelLocation = glGetUniformLocation(defaultShaderProgram, "model");
 	viewLocation = glGetUniformLocation(defaultShaderProgram, "view");
@@ -97,13 +95,15 @@ void SceneManager::LoadShaders()
 	textureOffsetLocation = glGetUniformLocation(defaultShaderProgram, "textureOffset");
 }
 
-void SceneManager::LoadTextures(TextureLoader* textureLoader)
+void SceneManager::LoadTextures()
 {
-	containerTexture = textureLoader->LoadRGB("Images\\container.jpg");
-	blankTexture = textureLoader->LoadBlank();
-	noiseTexture = textureLoader->LoadNoiseTexture(512, 512, 128, 7);
-	gratingTexture = textureLoader->LoadGratingTexture(512, 512, 100, 0.02, 1.7);
+	containerTexture = ResourceManager::LoadTexture("Images\\container.jpg");
+	blankTexture = ResourceManager::LoadBlankTexture();
+	noiseTexture = ResourceManager::LoadNoiseTexure(512, 512, 128, 7);
+	gratingTexture = ResourceManager::LoadGratingTexture(512, 512, 100, 0.02, 1.7);
 }
+
+// Update and draw functions are called each render call
 void SceneManager::UpdatePosition(float deltaX, float deltaY, float deltaZ)
 {
 	float newX = camera.GetX() + deltaX;
@@ -152,6 +152,6 @@ void SceneManager::Draw()
 	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	glUniform1f(textureOffsetLocation, 0.0f);
 
-	for (int i = 0; i < squareList.size(); ++i)
+	for (size_t i = 0; i < squareList.size(); ++i)
 		squareList[i]->Draw();
 }

@@ -217,11 +217,6 @@ void MotionReader::PollSensor(double& x, double& y)
 		// x = (short)((*receiveBuffer) + (*(receiveBuffer + 1)<<8))*xScaling;
 		x = (short)( (*(receiveBuffer + 1)<<8) | (*receiveBuffer))*xScaling;
 	}
-	else
-	{
-		x = 0.0;
-		y = 0.0;
-	}
 }
 
 void MotionReader::PrintReceiveBuffer()

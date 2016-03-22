@@ -8,6 +8,5 @@ uniform float offsetParameter;
 
 void main()
 {
-	//color = vec4(spriteColor,1.0) * texture(textureImage, TexCoords);
 	color = texture(textureImage, vec2(TexCoords.x + offsetParameter, TexCoords.y));
 }

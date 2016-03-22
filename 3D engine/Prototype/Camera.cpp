@@ -1,12 +1,22 @@
 #include "Camera.h"
 
+// Initializer:
+// Set default camera position
+// Set default projection matrix
+// Assigns pointers 
 Camera::Camera()
 {
-	cameraPosition = glm::vec3(0.0f, -0.5f, 80.0f);
+	cameraPosition = glm::vec3(0.0f, -0.5f, 0.0f);
 	cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	yaw = -90.0f;
+
+	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+	projectionMatrix = glm::perspective(45.0f, 2.0f, 0.1f, 80.0f);
+
+	pViewMatrix = glm::value_ptr(viewMatrix);
+	pProjectionMatrix = glm::value_ptr(projectionMatrix);
 }
 
 float Camera::GetX()
@@ -33,6 +43,8 @@ void Camera::SetY(float y)
 void Camera::SetZ(float z)
 {
 	this->cameraPosition.z = z;
+	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+	pViewMatrix = glm::value_ptr(viewMatrix);
 }
 void Camera::SetPosition(float x, float y, float z)
 {
@@ -41,5 +53,11 @@ void Camera::SetPosition(float x, float y, float z)
 
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+	return viewMatrix;
+}
+
+void Camera::SetProjectionMatrix(float fieldOfView, float aspectRatio, float nearZ, float farZ)
+{
+	projectionMatrix = glm::perspective(fieldOfView, aspectRatio, 0.1f, 100.0f);
+	pProjectionMatrix = glm::value_ptr(projectionMatrix);
 }

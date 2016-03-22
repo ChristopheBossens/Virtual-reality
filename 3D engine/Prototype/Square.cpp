@@ -21,10 +21,10 @@ Square::Square()
 	// Set default vertex buffer data
 	vertices = new float[32]{
 	//  x     y     z      r     g     b       u     v
-		1.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.5f,   1.0f, 0.0f,
-		1.0f,-1.0f, 0.0f,  0.0f, 1.0f, 0.5f,   1.0f, 1.0f,
-	   -1.0f,-1.0f, 0.0f,  0.0f, 0.0f, 0.5f,   0.0f, 1.0f,
-	   -1.0f, 1.0f, 0.0f,  1.0f, 1.0f, 0.5f,   0.0f, 0.0f };
+		1.0f, 1.0f, 0.0f,  1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
+		1.0f,-1.0f, 0.0f,  1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+	   -1.0f,-1.0f, 0.0f,  1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+	   -1.0f, 1.0f, 0.0f,  1.0f, 1.0f, 1.0f,   0.0f, 0.0f };
 
 
 	GLuint indices[] = {
@@ -47,6 +47,31 @@ Square::~Square()
 	glDeleteBuffers(1, &VBO);
 	delete[] vertices;
 }
+void Square::SetTopRight(float x, float y, float z)
+{
+	vertices[0] = x;
+	vertices[1] = y;
+	vertices[2] = z;
+}
+void Square::SetBottomRight(float x, float y, float z)
+{
+	vertices[8] = x;
+	vertices[9] = y;
+	vertices[10] = z;
+}
+void Square::SetBottomLeft(float x, float y, float z)
+{
+	vertices[16] = x;
+	vertices[17] = y;
+	vertices[18] = z;
+}
+void Square::SetTopLeft(float x, float y, float z)
+{
+	vertices[24] = x;
+	vertices[25] = y;
+	vertices[26] = z;
+}
+
 
 void Square::SetPosition(float x, float y, float z)
 {
@@ -65,23 +90,16 @@ void Square::SetPosition(float x, float y, float z)
 	v3 = transMatrix*v3;
 	v4 = transMatrix*v4;
 
-	vertices[0] = v1.x;
-	vertices[1] = v1.y;
-	vertices[2] = v1.z;
-
-	vertices[8] = v2.x;
-	vertices[9] = v2.y;
-	vertices[10] = v2.z;
-
-	vertices[16] = v3.x;
-	vertices[17] = v3.y;
-	vertices[18] = v3.z;
-
-	vertices[24] = v4.x;
-	vertices[25] = v4.y;
-	vertices[26] = v4.z;
+	SetTopRight(v1.x, v1.y, v1.z);
+	SetBottomRight(v2.x, v2.y, v2.z);
+	SetBottomLeft(v3.x, v3.y, v3.z);
+	SetTopLeft(v4.x, v4.y, v4.z);
 
 	UpdateVBO();
+}
+void Square::SetScaling(float scaleFactor)
+{
+	this->SetScaling(scaleFactor, scaleFactor);
 }
 void Square::SetScaling(float x, float y)
 {
@@ -100,21 +118,10 @@ void Square::SetScaling(float x, float y)
 	v3 = scaleMatrix*v3;
 	v4 = scaleMatrix*v4;
 
-	vertices[0] = v1.x;
-	vertices[1] = v1.y;
-	vertices[2] = v1.z;
-
-	vertices[8] = v2.x;
-	vertices[9] = v2.y;
-	vertices[10] = v2.z;
-
-	vertices[16] = v3.x;
-	vertices[17] = v3.y;
-	vertices[18] = v3.z;
-
-	vertices[24] = v4.x;
-	vertices[25] = v4.y;
-	vertices[26] = v4.z;
+	SetTopRight(v1.x, v1.y, v1.z);
+	SetBottomRight(v2.x, v2.y, v2.z);
+	SetBottomLeft(v3.x, v3.y, v3.z);
+	SetTopLeft(v4.x, v4.y, v4.z);
 
 	UpdateVBO();
 }
@@ -138,21 +145,10 @@ void Square::SetRotation(float x, float y, float z)
 	v3 = rotationMatrix*v3;
 	v4 = rotationMatrix*v4;
 
-	vertices[0] = v1.x;
-	vertices[1] = v1.y;
-	vertices[2] = v1.z;
-
-	vertices[8] = v2.x;
-	vertices[9] = v2.y;
-	vertices[10] = v2.z;
-
-	vertices[16] = v3.x;
-	vertices[17] = v3.y;
-	vertices[18] = v3.z;
-
-	vertices[24] = v4.x;
-	vertices[25] = v4.y;
-	vertices[26] = v4.z;
+	SetTopRight(v1.x, v1.y, v1.z);
+	SetBottomRight(v2.x, v2.y, v2.z);
+	SetBottomLeft(v3.x, v3.y, v3.z);
+	SetTopLeft(v4.x, v4.y, v4.z);
 
 	UpdateVBO();
 }
@@ -167,6 +163,7 @@ void Square::SetColor(float r, float g, float b)
 
 	UpdateVBO();
 }
+
 void Square::MatchTextureToScale()
 {
 	for (int i = 6;i < 32;i += 8)
@@ -186,6 +183,10 @@ void Square::UpdateVBO()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 32, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+void Square::Apply()
+{
+	UpdateVBO();
 }
 void Square::Draw()
 {

@@ -2,67 +2,152 @@
 #include <GLFW\glfw3.h>
 #include <iostream>
 #include <string>
-#include <cstdlib>
-#include <fstream>
-#include <algorithm>
 
 #include "Core.h"
 #include "RewardDelivery.h"
 #include "MotionReader.h"
-#include "ScreenManager.h"
-#include "SceneManager.h"
 #include "ExperimentManager.h"
+#include "DataLogger.h"
+#include "TexturedCorridor.h"
+#include "AppIO.h"
 
 using namespace std;
-using namespace Engine;
 using namespace Shapes;
 
 bool use2D = true;
 
-float xDelta = 0.0f;
-float zDelta = 0.0f;
-double mouseX = 0.0, mouseY = 0.0;
-
-// 2D experiment configuration variables
-int flipFrames = 60; // stimulus presentation duration
-bool isAlternating = false;
-bool stimulusVisible = true;
-bool increaseSize = false;
-bool decreaseSize = false;
-vector<int> gratingOrientations{ 0,15,30,45,60,75,90 };
-int orientationIndex = 0;
+double xDelta = 0.0f;
+double zDelta = 0.0f;
 
 // Global objects
 MotionReader motionReader;
-Engine::Core core;
+Core core;
 RewardDelivery rewardDelivery;
+ExperimentManager experimentManager;
+DataLogger dataLogger;
+unsigned int dataPacket =0;
+
+bool takeScreenshot = false;;
+bool switchEnvironment = false;
+
+// Temporary motion processing, will be moved to a separate class that allows to run 
+// configuration files that specify how we should react to motion
+enum State
+{
+	WAIT_FOR_MOTION,
+	REWARD_FOR_MOTION,
+	WAIT_FOR_STATIONARY,
+	REWARD_FOR_STATIONARY
+};
+State currentState = WAIT_FOR_MOTION;
+unsigned int runningDuration = 0;
+unsigned int stationaryDuration = 0;
+void ProcessMotion()
+{
+	// First
+	static unsigned int stateDuration = 0;
+	if (xDelta > AppIO::rewardParams.runningThresholdVelocity)
+	{
+		stationaryDuration = 0;
+		++runningDuration;
+	}
+	else
+	{
+		runningDuration = 0;
+		++stationaryDuration;
+	}
+
+	switch (currentState)
+	{
+	case WAIT_FOR_MOTION:
+		if (runningDuration >= AppIO::rewardParams.runningThresholdDuration)
+		{
+			dataPacket = 1;
+			rewardDelivery.PulseReward();
+			runningDuration = 0;
+			currentState = REWARD_FOR_MOTION;
+		}
+		break;
+	case REWARD_FOR_MOTION:
+		++stateDuration;
+		if (stateDuration >= AppIO::rewardParams.rewardStateDuration)
+		{
+			stateDuration = 0;
+			currentState = WAIT_FOR_STATIONARY;
+		}
+		if (runningDuration >= AppIO::rewardParams.runningThresholdDuration)
+		{
+			dataPacket = 1;
+			rewardDelivery.PulseReward();
+			runningDuration = 0;
+		}
+		
+		break;
+	case WAIT_FOR_STATIONARY:
+		if (stationaryDuration >= AppIO::rewardParams.stationaryThresholdDuration)
+		{
+			dataPacket = 1;
+			rewardDelivery.PulseReward();
+			stationaryDuration = 0;
+			currentState = REWARD_FOR_STATIONARY;
+		}
+		break;
+	case REWARD_FOR_STATIONARY:
+		++stateDuration;
+		if (stateDuration >= AppIO::rewardParams.stationaryStateDuration)
+		{
+			stateDuration = 0;
+			currentState = WAIT_FOR_MOTION;
+		}
+		if (runningDuration >= AppIO::rewardParams.stationaryThresholdDuration)
+		{
+			dataPacket = 1;
+			rewardDelivery.PulseReward();
+			stationaryDuration = 0;
+		}
+		break;
+	}
+
+	dataPacket += currentState << 4;
+}
 
 // Input callback functions
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
 	{
-		if (key == GLFW_KEY_ESCAPE)
-			glfwSetWindowShouldClose(core.baseWindow, 1);
-
-
-		if (key == GLFW_KEY_A)
-		{
-			isAlternating = !isAlternating;
-			if (isAlternating == false)
-				stimulusVisible = true;
-		}
-
 		switch (key)
 		{
+		case GLFW_KEY_ESCAPE:
+			core.SetShouldClose();
+			break;
+		case GLFW_KEY_S:
+			if (use2D)
+			{
+				experimentManager.keyStates[GLFW_KEY_S] = true;
+			}
+			break;
+		case GLFW_KEY_D:
+			experimentManager.keyStates[GLFW_KEY_D] = true;
+			break;
 		case GLFW_KEY_UP:
 		case GLFW_KEY_DOWN:
 			zDelta = 0.0f;
 			break;
 
+		case GLFW_KEY_T:
+			switchEnvironment = true;
+			break;
 		case GLFW_KEY_LEFT:
 		case GLFW_KEY_RIGHT:
 			xDelta = 0.0f;
+			break;
+
+		case GLFW_KEY_P:
+			takeScreenshot = true;
+			break;
+
+		case GLFW_KEY_R:
 			break;
 		}
 
@@ -89,196 +174,214 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	mouseX = xpos;
-	mouseY = ypos;
-	if (window == core.secondWindow)
-		mouseX += core.windowInfo.width;
+	experimentManager.mouseX = (int)xpos;
+	experimentManager.mouseY = (int)ypos;
+	experimentManager.mouseX += core.GetWindowOffset(window);
 }
 void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (yoffset > 0.5)
-		increaseSize = true;
-	if (yoffset < -0.5)
-		decreaseSize = true;
+	experimentManager.scrollDirection = (int)yoffset;
 }
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		rewardDelivery.PulseReward();
 }
-
-void ConfigureCore()
+void SetCallbacks()
 {
-	WindowInfo windowInfo;
-
-	cout << endl;
-	cout << "**************************" << endl;
-	cout << "Environment configuration" << endl;
-	cout << "**************************" << endl;
-	cout << "i\tRetrieves a list of available screen modes." << endl;
-	cout << "f\t Toggle fullscreen mode" << endl;
-	cout << "t\t Toggle camera mode" << endl;
-	cout << "w\t Set resolution width" << endl;
-	cout << "h\t Set resolution height" << endl;
-	cout << "v\t Toggle 2D/3D mode" << endl << endl;
-	cout << "Press o to continue" << endl;
-
-	char userInput;
-	int number;
-	while (true)
-	{
-		cin >> userInput;
-		if ( (userInput == 'f') || (userInput == 'F'))
-			windowInfo.useFullscreen = !windowInfo.useFullscreen;
-		if ((userInput == 'w') || (userInput == 'W'))
-		{
-			cin >> number;
-			windowInfo.width = number;
-		}
-		if ((userInput == 'h') || userInput == ('H'))
-		{
-			cin >> number;
-			windowInfo.height = number;
-		}
-		if ((userInput == 'i') || userInput == ('I'))
-		{
-			core.PrintMonitorInfo();
-		}
-		if ((userInput == 'o') || (userInput == 'O'))
-		{
-			cout << "Starting engine" << endl;
-			break;
-		}
-		if ((userInput == 'v') || (userInput == 'V'))
-		{
-			use2D = !use2D;
-			if (use2D)
-				cout << "2D mode enabled" << endl;
-			else
-				cout << "3D mode enabled" << endl;
-		}
-	}
-	core.Initialize(windowInfo);
+	core.SetKeyboardCallback(KeyCallback);
+	core.SetMouseMoveCallback(MouseMoveCallback);
+	core.SetMouseScrollCallback(MouseScrollCallback);
+	core.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
-int main()
+
+// Configuration interface for the data log file
+void SetOutputFile()
 {
-	TextureLoader textureLoader;
-	ScreenManager screenManager;
-	SceneManager corridor;
-	ExperimentManager experimentManager;
+	string dataPath = AppIO::CreateDataFolder();
+	string filename;
+	bool validFilename = false;
+	getline(cin, filename);
 
-	// Load configuration file
-	ifstream configFile("CONFIG.txt", std::ifstream::in);
-	int rewardDuration = 0;
-	if (configFile.is_open())
+	while (!validFilename)
 	{
-		cout << "File is open" << endl;
-		configFile >> rewardDuration;
-		configFile.close();
-	}
-	cout << "Retrieved reward duration: " << rewardDuration << endl;
+		filename = "";
+		cout << "Enter a filename to save data: " << endl;
+		getline(cin, filename);
 
-	// Initiate components
-	ConfigureCore();
-	screenManager.Initialize(core.windowInfo.width, core.windowInfo.height, &core);	
-
-	rewardDelivery.Initialize(0, 2);
-	rewardDelivery.SetRewardDuration(150);
-	motionReader.Connect(8);
-	motionReader.SetParameters(40, 40, 31, 31, 200);
-	
-	
-	corridor.LoadTextures(&textureLoader);
-	corridor.LoadShaders();
-	corridor.LoadMesh();
-	corridor.SetProjectionMatrix(45.0f, 2.0f*core.windowInfo.width / core.windowInfo.height);
-
-	experimentManager.SetOrthographicMatrix(0.0f, 2 * core.windowInfo.width, core.windowInfo.height, 0.0f);
-	experimentManager.LoadTestExperiment(&textureLoader);
-
-	// Set callback functions for keyboard and mouse devices
-	glfwSetKeyCallback(core.baseWindow, KeyCallback);
-	glfwSetKeyCallback(core.secondWindow, KeyCallback);
-
-	glfwSetCursorPosCallback(core.baseWindow, MouseMoveCallback);
-	glfwSetCursorPosCallback(core.secondWindow, MouseMoveCallback);
-
-	glfwSetScrollCallback(core.baseWindow, MouseScrollCallback);
-	glfwSetScrollCallback(core.secondWindow, MouseScrollCallback);
-
-	glfwSetMouseButtonCallback(core.baseWindow, MouseButtonCallback);
-	glfwSetMouseButtonCallback(core.secondWindow, MouseButtonCallback);
-
-	glfwSetInputMode(core.baseWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	glfwSetInputMode(core.secondWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-
-	double currentTime = glfwGetTime();
-	double delta;
-
-	// Game loop
-	unsigned int frameCount = 0;
-	int updateTick = 0;
-
-	motionReader.StartReading();
-	double xMotionReader, yMotionReader;
-	rewardDelivery.StartReward();
-
-	ofstream logFile;
-	
-	//logFile.open("C:\\VR_SYSTEM\\Data\\3D_pilot\\20160128\\68680_R3.dat", ios::binary | ios::out);
-
-	while (!glfwWindowShouldClose(core.baseWindow))
-	{
-		// Get time
-		delta = glfwGetTime() - currentTime;
-		currentTime = glfwGetTime();
-
-		motionReader.PollSensor(xMotionReader, yMotionReader);
-		xMotionReader = -xMotionReader/(100.0f*delta);
-
-		
-		// Write data to logfile
-		/*logFile.write((char*)&currentTime, sizeof(double));
-		logFile.write((char*)&xMotionReader, sizeof(double));
-		logFile.write((char*)&cameraPos.z, sizeof(float));
-		logFile.write((char*)&inRewardZone, sizeof(bool));*/
-
-		// Draw the complete screen to the offscreen framebuffer
-		screenManager.DrawToTexture();
-		if (use2D)
+		if (filename == "")
 		{
-			experimentManager.Update(mouseX, mouseY);
-			experimentManager.DrawExperiment();
+			cout << "No filename specified. Data will not be saved." << endl;
+			validFilename = true;
 		}
 		else
 		{
-			corridor.UpdatePosition(xDelta, 0.0f, zDelta);
-			corridor.Draw();
+			if (AppIO::FileExists(dataPath + filename))
+			{
+				cout << filename << " already exists. Choose a different filename." << endl;
+			}
+			else
+			{
+				cout << "Data will be saved to " << filename << endl;
+				dataLogger.SetLogfile(dataPath + filename);
+				validFilename = true;
+			}
 		}
-		screenManager.DrawToScreen();
+	}
+}
+void ConfigureCore()
+{
+	cout << "Select an experiment: " << endl;
+	cout << "1)\t2D training" << endl;
+	cout << "2)\t2D receptive field mapping" << endl;
+	cout << "3)\t2D orientation tuning" << endl;
+	cout << "4)\t3D training" << endl;
+	
+	string userInput;
+	bool useFullscreen = true;
 
-		// Update frame count
+	AppIO::ReadConfiguration();
+	while (true)
+	{
+		cin >> userInput;
+		if (userInput[0]== '1')
+		{
+			use2D = true;
+			SetOutputFile();
+			break;
+		}
+		if (userInput[0]=='4')
+		{
+			use2D = false;
+			SetOutputFile();
+			break;
+		}
+	}
+
+	if (userInput.length() >= 2)
+	{
+		if (userInput[1] == 'd')
+			useFullscreen = false;
+	}
+
+	rewardDelivery.Initialize(AppIO::appParams.rewardPort, AppIO::appParams.rewardSwitch);
+	rewardDelivery.SetRewardDuration(AppIO::appParams.rewardDuration);
+	motionReader.Connect(AppIO::appParams.motionPort);
+	motionReader.SetParameters(40, 40, 31, 31, 200);
+	core.Initialize(AppIO::appParams.screenHeight,AppIO::appParams.screenWidth,2,useFullscreen);
+}
+
+
+int main()
+{
+	TextureCorridor textureCorridor;
+
+	// Initiate components
+	ConfigureCore();
+	SetCallbacks();
+	
+	
+	int currentEnvironment = 1;
+	if (use2D)
+	{
+		experimentManager.Initialize();
+		experimentManager.SetOrthographicMatrix(0.0f, (float)core.GetBufferWidth(), (float)core.GetBufferHeight(), 0.0f);
+		//experimentManager.LoadExperimentXML("C:\\Users\\Christophe\\Documents\\GitHub\\Virtual-reality\\3D engine\\Debug\\Experiments\\RF_Position.xml");
+		//experimentManager.InitiateExperiment();
+		experimentManager.InitiateSandbox();
+	}
+	else
+	{
+		textureCorridor.LoadTextures();
+		textureCorridor.LoadShaders();
+		textureCorridor.LoadMesh(currentEnvironment);
+		/*
+		corridor.LoadTextures(&textureLoader);
+		corridor.LoadShaders();
+		corridor.LoadMesh();
+		corridor.SetProjectionMatrix(45.0f, (float)core.GetScreenWidth() / core.GetScreenHeight());
+		*/
+
+	}
+
+	double currentTime = glfwGetTime();
+	double timeDelta;
+
+	// Game loop
+	unsigned int frameCount = 0;
+
+	motionReader.StartReading();
+	rewardDelivery.StartReward();
+	dataLogger.StartLogging();
+	while (!core.ShouldClose())
+	{
+		// Get motion input (output of PollSensor gives displacement in cm)
+		timeDelta = glfwGetTime() - currentTime;
+		currentTime = glfwGetTime();
+		motionReader.PollSensor(zDelta, xDelta);
+
+
+		// Update the experiments
+		if (use2D)
+		{
+			if (experimentManager.IsRunning())
+			{
+				experimentManager.ProcessInput();
+				experimentManager.UpdateSandbox(frameCount);
+				experimentManager.DrawSandbox();
+			}
+			else
+			{
+				glClear(GL_COLOR_BUFFER_BIT);
+			}
+		}
+		else
+		{
+			ProcessMotion();
+			if (switchEnvironment)
+			{
+				switchEnvironment = false;
+				if (currentEnvironment == 1)
+					currentEnvironment = 2;
+				else
+					currentEnvironment = 1;
+				textureCorridor.LoadMesh(currentEnvironment);
+			}
+			
+			textureCorridor.UpdatePosition(0.0f, 0.0f, (float)zDelta);
+			textureCorridor.Draw();
+		}
+
+		if (takeScreenshot)
+		{
+			takeScreenshot = false;
+		}
+		core.RenderFramebuffer();
+
+		// Update framecount and log all data to file
+		dataLogger.LogData(frameCount);
+		dataLogger.LogData(timeDelta);
+		dataLogger.LogData(zDelta);
+		dataLogger.LogData(xDelta);
+		dataLogger.LogData(dataPacket);
+		dataPacket = 0;
 		++frameCount;
+
+		// Periodically log output to console for debugging
+		if (frameCount % 60 == 0)
+			cout << "Motion data: " << zDelta << ", " << xDelta << endl;
+
 
 		// Check events
 		glfwPollEvents();
 	}
 
 	// Clean up
-	logFile.close();
+	dataLogger.StopLogging();
 	rewardDelivery.StopReward();
 	motionReader.StopReading();
 
-	glfwTerminate();
-
-	cout << "Requested window resolution: " << endl;
-	cout << core.windowInfo.width << " x " << core.windowInfo.height << endl;
-
-	cout << "Obtained window resolution: " << endl;
-	cout << core.baseWindowInfo.width << " x " << core.baseWindowInfo.height << endl;
-	cout << core.secondWindowInfo.width << " x " << core.secondWindowInfo.width << endl;
-	cin.get();
+	core.Shutdown();
 	system("pause");
 	return 0;
 }

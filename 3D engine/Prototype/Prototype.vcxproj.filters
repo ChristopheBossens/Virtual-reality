@@ -31,25 +31,16 @@
     <Filter Include="2D">
       <UniqueIdentifier>{65969e99-6adb-46ba-891a-98062724a786}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IO">
+      <UniqueIdentifier>{791e5b03-062a-4e75-8dd1-b0519b4a5839}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader_loader.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Square.cpp">
       <Filter>Shapes</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureLoader.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="TextRenderer.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="ScreenManager.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="MotionReader.cpp">
       <Filter>Peripheral</Filter>
@@ -72,22 +63,31 @@
     <ClCompile Include="ExperimentManager.cpp">
       <Filter>2D</Filter>
     </ClCompile>
+    <ClCompile Include="ExperimentLoader.cpp">
+      <Filter>2D</Filter>
+    </ClCompile>
+    <ClCompile Include="DataLogger.cpp">
+      <Filter>IO</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>IO</Filter>
+    </ClCompile>
+    <ClCompile Include="TexturedCorridor.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="AppIO.cpp">
+      <Filter>IO</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shader_Loader.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Square.h">
       <Filter>Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureLoader.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="TextRenderer.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="ScreenManager.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="MotionReader.h">
       <Filter>Peripheral</Filter>
@@ -109,6 +109,27 @@
     </ClInclude>
     <ClInclude Include="ExperimentManager.h">
       <Filter>2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ExperimentLoader.h">
+      <Filter>2D</Filter>
+    </ClInclude>
+    <ClInclude Include="DataLogger.h">
+      <Filter>IO</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
+      <Filter>IO</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturedCorridor.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="AppIO.h">
+      <Filter>IO</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
