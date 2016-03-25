@@ -1,19 +1,15 @@
 # Virtual-reality
 Overview
 
---matlabServer
-Contains the code that runs on the stimulus computer. Contains an xmlParser to read xml trial files, a tcp connection manager to allow interaction from the vrClient program, and an experiment  routine that uses Psychophysics toolbox for stimulus presentation
+-- 3D Engine
+Contains C++ code for the running ball software
 
--- Motion Sensor
-Contains arduino sketch for ADNS motion sensor and wiring diagram
+-- Matlab
+Contains scripts useful for analysing motion sensor data (Analysis folder), Matlab classes for Motion sensor, Reward delivery system and Cheetah Daq interaction (Tools folder) and Matlab scripts that provide an interface for generating XML files for running ball experiments (xmlGenerator folder).
 
--- PhotoCell
-Contains arduino sketch for the photocell, as well as analysis scripts for photocell data and calibration data for the current setup.
-
---VR_Software
-Contains the following applications:
-  1. Motion sensor: can be used to test data from the motion sensor independent from an experiment. Use this if you suspect something is wrong the motion sensors
-  2. Photosensor: This application is used to register data collected when the PhotoCell arduino sketch is running. Use this if you suspect something is wrong with stimulus presentation.
-  3. Relay: Application that can be used to quickly test the relay board used for reward delivery
-  4. vrClient: GUI application for controlling the matlabServer and delivering PSTH from the Cheetah system
-
+-- Tools
+  MotionSensor: Contains the arduino code for the motion sensor. Contains an additional program which can be used to quickly check if motion sensor data is recorder correctly
+  
+  Relay: Program that allows to quickly check if each channel of the relay board is working properly. Can also be used to finetune the amount of time the relay needs to be open to give the proper amount of water
+  
+  USB1208: Program that allows to quickly manipulate the digital I/O channels of the USB1208 device
