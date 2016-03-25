@@ -28,42 +28,41 @@
 % timeVector        : accumulates the frameDelta values
 % rewardStateVector : extracts the reward state information
 % velocityVector    : Calculates current running velocity (cm/s)
+function [frameNumber, frameDelta, xData, zData, rewardVector, timeVector, rewardStateVector,velocityVector] = ExtractRunningData(filepath, currentFile)
+% filepath ='G:\Projects\VR_SYSTEM\System\3D engine\Debug\DATA\20160322\';
+% currentFile = '68571r0';
 
-filepath ='G:\Projects\VR_SYSTEM\System\3D engine\Debug\DATA\20160322\';
-currentFile = '68571r0';
+    if exist([filepath currentFile],'file') == 0
+        error('File does not exist!');
+    end
+    fileInfo = dir([filepath currentFile]);
 
-if exist([filepath currentFile],'file') == 0
-    error('File does not exist!');
+    nPackets = fileInfo.bytes/32;
+
+    fid = fopen([filepath currentFile]);
+
+    frameNumber = zeros(1,nPackets);
+    frameDelta = zeros(1,nPackets);
+    xData = zeros(1,nPackets);
+    zData = (zeros(1,nPackets));
+    packetData = uint32(zeros(1,nPackets));
+    for sampleIndex = 1:nPackets
+        framecount = fread(fid,1,'uint32');
+        timeDelta = fread(fid,1,'double');
+        xDelta = fread(fid,1,'double');
+        zDelta = fread(fid,1,'double');
+        dataPacket = uint32(fread(fid,1,'uint32'));
+
+        frameNumber(sampleIndex) = framecount;
+        frameDelta(sampleIndex) = timeDelta;
+        xData(sampleIndex) = -1.*xDelta;
+        zData(sampleIndex) = zDelta;
+        packetData(sampleIndex) = dataPacket;
+    end
+    fclose(fid);
+
+    rewardVector = bitget(packetData,1);
+    timeVector = cumsum(frameDelta);
+    rewardStateVector = bitand(bitshift(packetData,-4),255);
+    velocityVector = xData./frameDelta;
 end
-fileInfo = dir([filepath currentFile]);
-
-nPackets = fileInfo.bytes/32;
-
-fid = fopen([filepath currentFile]);
-
-frameNumber = zeros(1,nPackets);
-frameDelta = zeros(1,nPackets);
-xData = zeros(1,nPackets);
-zData = (zeros(1,nPackets));
-packetData = uint32(zeros(1,nPackets));
-for sampleIndex = 1:nPackets
-    framecount = fread(fid,1,'uint32');
-    timeDelta = fread(fid,1,'double');
-    xDelta = fread(fid,1,'double');
-    zDelta = fread(fid,1,'double');
-    dataPacket = uint32(fread(fid,1,'uint32'));
-    
-    frameNumber(sampleIndex) = framecount;
-    frameDelta(sampleIndex) = timeDelta;
-    xData(sampleIndex) = -1.*xDelta;
-    zData(sampleIndex) = zDelta;
-    packetData(sampleIndex) = dataPacket;
-end
-
-
-rewardVector = bitget(packetData,1);
-timeVector = cumsum(frameDelta);
-rewardStateVector = bitand(bitshift(packetData,-4),255);
-velocityVector = xData./frameDelta;
-
-fclose(fid);
