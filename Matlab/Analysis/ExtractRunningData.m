@@ -28,7 +28,7 @@
 % timeVector        : accumulates the frameDelta values
 % rewardStateVector : extracts the reward state information
 % velocityVector    : Calculates current running velocity (cm/s)
-function [frameNumber, frameDelta, xData, zData, rewardVector, timeVector, rewardStateVector,velocityVector] = ExtractRunningData(filepath, currentFile)
+function [frameNumber, frameDelta, xData, zData, rewardVector, timeVector, rewardStateVector,velocityVector,conditionData] = ExtractRunningData(filepath, currentFile)
 % filepath ='G:\Projects\VR_SYSTEM\System\3D engine\Debug\DATA\20160322\';
 % currentFile = '68571r0';
 
@@ -63,6 +63,7 @@ function [frameNumber, frameDelta, xData, zData, rewardVector, timeVector, rewar
 
     rewardVector = bitget(packetData,1);
     timeVector = cumsum(frameDelta);
-    rewardStateVector = bitand(bitshift(packetData,-4),255);
+    rewardStateVector = bitand(bitshift(packetData,-4),15);
+    conditionData = bitand(bitshift(packetData,-8),255);
     velocityVector = xData./frameDelta;
 end
